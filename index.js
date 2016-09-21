@@ -1,7 +1,22 @@
-const StepSequencer = require('step-sequencer')
+const midi = require('midi')
+const input = new midi.input()
+const output = new midi.output()
+const {red, green, orange, yellow} = require('midi-launchpad').colors
+let port = 0
 
-const sequencer = new StepSequencer()
+for (let i = 0; i < input.getPortCount(); i++)  {
+    if (/Launchpad/.test(input.getPortName(i))) {
+        port = i
+    }
+}
 
-sequencer.on(0, (step) => console.log(0, step))
+var midiConnector = require('midi-launchpad').connect(port, false);
 
-sequencer.play()
+// wait for the connector to be ready
+midiConnector.on('ready',function(launchpad) {
+  launchpad.on('press', (button) => {
+    console.log(button.x, button.y)
+    button.light(green.high)
+  })
+})
+
