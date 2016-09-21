@@ -26,9 +26,22 @@ const args = argv.option([
 const options = {tempo: 10, steps: 12, rows: 12}
 
 const state = {
-    stepGrid: emptyGrid(options.steps, 8, false),
-    step: 0,
-    getQuadrant: () => [Math.floor(state.step / 8) * 8, 0]
+    stepGrid    : emptyStepGrid(),
+    step        : 0,
+    row         : 0,
+    moveViewDown: () => {
+        state.row += 8
+        if (state.row >= options.rows) {
+            state.row = Math.floor((state.row - options.rows) / 8)
+        }
+    },
+    moveViewUp: () => {
+        state.row -= 8
+        if (state.row < 0) {
+            state.row = options.rows + state.row
+        }
+    },
+    getOffsets: () => [Math.floor(state.step / 8) * 8, Math.floor(state.row / 8) * 8]
 }
 
 const stepSequencer = new StepSequencer(options.tempo, options.steps, state.stepGrid)
@@ -40,9 +53,10 @@ connection.on('ready', launchpad => {
 
     function render() {
         const canvas = emptyGrid(8, 8, '0')
-        const [offsetX, offsetY]  = state.getQuadrant()
-        const step   = state.step - offsetX
-        const page   = state.stepGrid.slice(offsetX, offsetX + 8)
+        const [offsetX, offsetY] = state.getOffsets()
+        const step = state.step - offsetX
+        const page = state.stepGrid.slice(offsetX, offsetX + 8)
+            .map(column => column.slice(offsetY, offsetY + 8))
         canvas.forEach((row, y) => {
             page.forEach((values, x) => {
                 row[x] = values[y] ? 'g' : '0'
@@ -51,6 +65,7 @@ connection.on('ready', launchpad => {
         canvas.forEach((row, y) => {
             row[step] = page[step][y] ? 'r' : 'y'
         })
+        console.log(state.row)
         launchpad.renderBytes(canvas.map(a => a.join('')))
     }
 
@@ -63,15 +78,24 @@ connection.on('ready', launchpad => {
 
     launchpad.on('press', button => {
         if(!button.special) {
-            const [offsetX, offsetY] = state.getQuadrant()
+            const [offsetX, offsetY] = state.getOffsets()
             const x = button.x + offsetX
             const y = button.y + offsetY
             if (x < options.steps && y < options.rows) {
                 state.stepGrid[x][y] = !state.stepGrid[x][y]
             }
         } else {
-            if (button.special[0] === 'mixer') {
-                state.stepGrid = emptyStepGrid()
+            console.log(button.special[0])
+            switch(button.special[0]) {
+                case 'mixer':
+                    state.stepGrid = emptyStepGrid()
+                    break
+                case 'down':
+                    state.moveViewDown()
+                    break
+                case 'up':
+                    state.moveViewUp()
+                    break
             }
         }
         render()
@@ -83,4 +107,8 @@ connection.on('ready', launchpad => {
 
 function emptyGrid(i, j, defaultValue) {
     return Array(i).fill().map(() => Array(j).fill(defaultValue))
+}
+
+function emptyStepGrid() {
+    return emptyGrid(options.steps, 8, false)
 }
