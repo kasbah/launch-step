@@ -22,8 +22,6 @@ const args = argv.option([
     },
 ]).run()
 
-const connection = midiLaunchpad.connect(undefined, false)
-
 const options = {tempo: 10, steps: 8}
 
 const state = {
@@ -33,19 +31,20 @@ const state = {
 
 const stepSequencer = new StepSequencer(options.tempo, options.steps, state.stepArray)
 
+//undefined = auto-connect, false = disable animation
+const connection = midiLaunchpad.connect(undefined, false)
+
 connection.on('ready', launchpad => {
 
     function render(state) {
         let canvas = emptyArray(8, 8)
-        canvas = canvas.map((row, y) => {
+        canvas.forEach((row, y) => {
             state.stepArray.forEach((values, x) => {
                 row[x] = values[y] ? 'g' : '0'
             })
-            return row
         })
-        canvas = canvas.map((row, y) => {
+        canvas.forEach((row, y) => {
             row[state.step] = state.stepArray[state.step][y] ? 'r' : 'y'
-            return row
         })
         launchpad.renderBytes(canvas.map(a => a.join('')))
     }
