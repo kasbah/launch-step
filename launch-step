@@ -22,50 +22,52 @@ const args = argv.option([
     },
 ]).run()
 
+function emptyArray(i, j) {
+    return Array(i).fill().map(() => Array(j).fill())
+}
+
 const connection = midiLaunchpad.connect(undefined, false)
 
 const options = {tempo: 10, steps: 8}
 
-const stepArray = Array(8).fill().map(() => Array(options.steps).fill(false))
 
-const stepSequencer = new StepSequencer(options.tempo, options.steps, stepArray)
+const state = {
+    stepArray: emptyArray(8, options.steps).map(column => column.fill(false)),
+    step: 0
+}
+
+const stepSequencer = new StepSequencer(options.tempo, options.steps, state.stepArray)
 
 connection.on('ready', launchpad => {
 
-    stepArray.forEach((values, x) => {
-        stepSequencer.on(x, a => {
-            let draw = Array(8).fill().map(() => Array(8).fill('0'))
-            draw = draw.map((s, y) => {
-                stepArray.forEach((values, x) => {
-                    s[x] = values[y] ? 'g' : '0'
-                })
-                return s
+    function render(state) {
+        let canvas = emptyArray(8, 8)
+        canvas = canvas.map((row, y) => {
+            state.stepArray.forEach((values, x) => {
+                row[x] = values[y] ? 'g' : '0'
             })
-            draw = draw.map((s, y) => {
-                s[x] = stepArray[x][y] ? 'r' : 'y'
-                return s
-            })
-            launchpad.renderBytes(draw.map(a => a.join('')))
+            return row
+        })
+        canvas = canvas.map((row, y) => {
+            row[state.step] = state.stepArray[state.step][y] ? 'r' : 'y'
+            return row
+        })
+        launchpad.renderBytes(canvas.map(a => a.join('')))
+    }
+
+    state.stepArray.forEach((values, step) => {
+        stepSequencer.on(step, a => {
+            state.step = step
+            render(state)
         })
     })
 
     launchpad.on('press', button => {
         if(!button.special) {
-            stepArray[button.x][button.y] = !stepArray[button.x][button.y]
-            const state = button.getState()
-            if (state === off) {
-                button.light(green.high)
-            }
-            else if (state === red.high) {
-                button.light(yellow.high)
-            }
-            else if (state === yellow.high) {
-                button.light(red.high)
-            } else {
-                button.light(off)
-            }
-
+            state.stepArray[button.x][button.y] = !state.stepArray[button.x][button.y]
+        } else {
         }
+        render(state)
     })
 
     stepSequencer.play()
