@@ -24,11 +24,10 @@ const args = argv.option([
 
 const connection = midiLaunchpad.connect(undefined, false)
 
-const options = {tempo: 120, steps: 8}
+const options = {tempo: 10, steps: 8}
 
-const stepArray = Array(8).fill(null).map(() => {
-    return Array(options.steps).fill(0)
-})
+const stepArray = Array(8).fill().map(() => Array(options.steps).fill(0))
+const drawArray = Array(9).fill().map(() => "000000000")
 
 const stepSequencer = new StepSequencer(options.tempo, options.steps, stepArray)
 
@@ -36,11 +35,15 @@ connection.on('ready', launchpad => {
 
     stepArray.forEach((values, index) => {
         stepSequencer.on(index, a => {
-            console.log(a)
+            const draw = drawArray.map((s, i) => {
+                if (i > 7) {
+                    return s
+                }
+                return s.slice(0, index) + 'y' + s.slice(index + 1)
+            })
+            launchpad.renderBytes(draw)
         })
     })
-
-    stepSequencer.play()
 
     launchpad.on('press', button => {
         if(button.getState() !== off) {
@@ -49,5 +52,8 @@ connection.on('ready', launchpad => {
             button.light(green.high)
         }
     })
+
+    stepSequencer.play()
+
 })
 
