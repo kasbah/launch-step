@@ -26,34 +26,48 @@ const connection = midiLaunchpad.connect(undefined, false)
 
 const options = {tempo: 10, steps: 8}
 
-const stepArray = Array(8).fill().map(() => Array(options.steps).fill(0))
-const drawArray = Array(9).fill().map(() => "000000000")
+const stepArray = Array(8).fill().map(() => Array(options.steps).fill(false))
 
 const stepSequencer = new StepSequencer(options.tempo, options.steps, stepArray)
 
 connection.on('ready', launchpad => {
 
-    stepArray.forEach((values, index) => {
-        stepSequencer.on(index, a => {
-            const draw = drawArray.map((s, i) => {
-                if (i > 7) {
-                    return s
-                }
-                return s.slice(0, index) + 'y' + s.slice(index + 1)
+    stepArray.forEach((values, x) => {
+        stepSequencer.on(x, a => {
+            let draw = Array(8).fill().map(() => Array(8).fill('0'))
+            draw = draw.map((s, y) => {
+                stepArray.forEach((values, x) => {
+                    s[x] = values[y] ? 'g' : '0'
+                })
+                return s
             })
-            launchpad.renderBytes(draw)
+            draw = draw.map((s, y) => {
+                s[x] = stepArray[x][y] ? 'r' : 'y'
+                return s
+            })
+            launchpad.renderBytes(draw.map(a => a.join('')))
         })
     })
 
     launchpad.on('press', button => {
-        if(button.getState() !== off) {
-            button.light(off)
-        } else {
-            button.light(green.high)
+        if(!button.special) {
+            stepArray[button.x][button.y] = !stepArray[button.x][button.y]
+            const state = button.getState()
+            if (state === off) {
+                button.light(green.high)
+            }
+            else if (state === red.high) {
+                button.light(yellow.high)
+            }
+            else if (state === yellow.high) {
+                button.light(red.high)
+            } else {
+                button.light(off)
+            }
+
         }
     })
 
     stepSequencer.play()
 
 })
-
