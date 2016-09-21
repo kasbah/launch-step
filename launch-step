@@ -12,24 +12,25 @@ const args = argv.option([
         short: 't',
         type: 'string',
         description: 'Tempo in steps per minute. The default is 90. Can be set to "ext" to use an external midi clock signal.',
-        example: "launch-step --tempo 133.2"
+        example: "'launch-step -t 133.2' or 'launch-step --tempo=133.2'"
     },
     {
         name: 'steps',
         short: 's',
         type: 'int',
         description: 'Number of steps in the sequence. The default is 8.',
-        example: "launch-step --steps 12"
+        example: "'launch-step -s 12' or 'launch-step --steps=12'"
     },
     {
         name: 'rows',
         short: 'r',
-        type: 'int',
+        type: 'float',
         description: 'Number of rows i.e. tracks in the sequence. The default is 8.',
-        example: "launch-step --rows 12"
+        example: "'launch-step -r 12' or 'launch-step --rows=12'"
     },
 ]).run()
 
+console.log(args.options)
 const options = {
     tempo: Number(args.options.tempo || 90),
     steps: args.options.steps || 8,
@@ -38,22 +39,24 @@ const options = {
 console.log(`Starting ${options.steps} step sequencer with ${options.rows} rows at ${options.tempo} bpm.`)
 
 const state = {
-    stepGrid    : emptyStepGrid(),
-    step        : 0,
-    row         : 0,
-    moveViewDown: () => {
-        state.row += 8
-        if (state.row >= options.rows) {
-            state.row = Math.floor((state.row - options.rows) / 8)
+    stepGrid : emptyStepGrid(),
+    step     : 0,
+    row      : 0,
+    moveViewDown: function () {
+        this.row += 8
+        if (this.row >= options.rows) {
+            this.row = Math.floor((this.row - options.rows) / 8)
         }
     },
-    moveViewUp: () => {
-        state.row -= 8
-        if (state.row < 0) {
-            state.row = options.rows + state.row
+    moveViewUp: function () {
+        this.row -= 8
+        if (this.row < 0) {
+            this.row = options.rows + this.row
         }
     },
-    getOffsets: () => [Math.floor(state.step / 8) * 8, Math.floor(state.row / 8) * 8]
+    getOffsets: function() {
+        return [Math.floor(this.step / 8) * 8, Math.floor(this.row / 8) * 8]
+    }
 }
 
 const stepSequencer = new StepSequencer(options.tempo, options.steps, state.stepGrid)
