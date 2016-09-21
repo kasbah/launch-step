@@ -27,7 +27,8 @@ const options = {tempo: 10, steps: 16}
 
 const state = {
     stepArray: emptyStepArray(),
-    step: 0
+    step: 0,
+    getPageIndex: () => Math.floor(state.step / 8) * 8
 }
 
 const stepSequencer = new StepSequencer(options.tempo, options.steps, state.stepArray)
@@ -37,11 +38,11 @@ const connection = midiLaunchpad.connect(undefined, false)
 
 connection.on('ready', launchpad => {
 
-    function render(state) {
-        const canvas = emptyArray(8, 8)
-        const pageIndex = getPageIndex(state)
-        const step = state.step - pageIndex
-        const page = state.stepArray.slice(pageIndex, pageIndex + 8)
+    function render() {
+        const canvas    = emptyArray(8, 8)
+        const pageIndex = state.getPageIndex()
+        const step      = state.step - pageIndex
+        const page      = state.stepArray.slice(pageIndex, pageIndex + 8)
         canvas.forEach((row, y) => {
             page.forEach((values, x) => {
                 row[x] = values[y] ? 'g' : '0'
@@ -54,30 +55,27 @@ connection.on('ready', launchpad => {
     }
 
     state.stepArray.forEach((values, step) => {
-        stepSequencer.on(step, a => {
+        stepSequencer.on(step, () => {
             state.step = step
-            render(state)
+            render()
         })
     })
 
     launchpad.on('press', button => {
         if(!button.special) {
-            state.stepArray[getPageIndex(state) + button.x][button.y] = !state.stepArray[button.x][button.y]
+            const i = state.getPageIndex()
+            state.stepArray[i + button.x][button.y] = !state.stepArray[button.x][button.y]
         } else {
             if (button.special[0] === 'mixer') {
                 state.stepArray = emptyStepArray()
             }
         }
-        render(state)
+        render()
     })
 
     stepSequencer.play()
 
 })
-
-function getPageIndex(state) {
-    return Math.floor(state.step / 8) * 8
-}
 
 function emptyArray(i, j) {
     return Array(i).fill().map(() => Array(j).fill())
