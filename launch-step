@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+const midi          = require('midi')
+const midiLaunchpad = require('midi-launchpad')
+const argv          = require('argv')
+const {red, green, orange, yellow, off} = midiLaunchpad.colors
+
+const args = argv.option([
+  {
+    name: 'tempo',
+    short: 't',
+    type: 'string',
+    description: 'Tempo in beats per minute. The default is 120. Can be set to "ext" to use an external midi clock signal.',
+    example: "launch-step --tempo 133.2"
+  },
+  {
+    name: 'steps',
+    short: 's',
+    type: 'int',
+    description: 'Number of steps in the sequence. The default is 8.',
+    example: "launch-step --steps 12"
+  },
+]).run()
+
+
+
+const connection = midiLaunchpad.connect()
+
+connection.on('ready', launchpad => {
+  launchpad.on('press', button => {
+    if(button.getState() !== off) {
+      button.light(off)
+    } else {
+      button.light(green.high)
+    }
+  })
+})

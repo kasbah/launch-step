@@ -1,16 +1,21 @@
 {
-  "name": "midi-launchpad-step",
+  "name": "launch-step",
   "version": "1.0.0",
   "description": "Midi step sequencer for the Novation Launchpad",
-  "main": "index.js",
+  "main": "launch-step",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "argv": "github:kasbah/argv#c0f809030fffeb39375a3a804e612975f68680c8",
     "midi": "^0.9.5",
     "midi-launchpad": "github:granjow/node-midi-launchpad#ce3222cb611712f9df253baf76cbc194ffd834d9",
-    "step-sequencer": "^0.1.1"
+    "step-sequencer": "^0.1.1",
+    "word-wrap": "^1.1.0"
+  },
+  "bin": {
+    "launch-step": "launch-step"
   }
 }
