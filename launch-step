@@ -11,7 +11,7 @@ const args = argv.option([
         name: 'tempo',
         short: 't',
         type: 'string',
-        description: 'Tempo in beats per minute. The default is 120. Can be set to "ext" to use an external midi clock signal.',
+        description: 'Tempo in steps per minute. The default is 90. Can be set to "ext" to use an external midi clock signal.',
         example: "launch-step --tempo 133.2"
     },
     {
@@ -21,9 +21,21 @@ const args = argv.option([
         description: 'Number of steps in the sequence. The default is 8.',
         example: "launch-step --steps 12"
     },
+    {
+        name: 'rows',
+        short: 'r',
+        type: 'int',
+        description: 'Number of rows i.e. tracks in the sequence. The default is 8.',
+        example: "launch-step --rows 12"
+    },
 ]).run()
 
-const options = {tempo: 10, steps: 8, rows: 22}
+const options = {
+    tempo: Number(args.options.tempo || 90),
+    steps: args.options.steps || 8,
+    rows: args.options.rows || 8
+}
+console.log(`Starting ${options.steps} step sequencer with ${options.rows} rows at ${options.tempo} bpm.`)
 
 const state = {
     stepGrid    : emptyStepGrid(),
@@ -48,8 +60,6 @@ const stepSequencer = new StepSequencer(options.tempo, options.steps, state.step
 
 //undefined = auto-connect, false = disable animation
 const connection = midiLaunchpad.connect(undefined, false)
-
-const pageColors = ['0', 'r', 'y', 'g', 'o']
 
 connection.on('ready', launchpad => {
 
