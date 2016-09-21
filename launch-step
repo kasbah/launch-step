@@ -23,12 +23,12 @@ const args = argv.option([
     },
 ]).run()
 
-const options = {tempo: 10, steps: 12}
+const options = {tempo: 10, steps: 12, rows: 12}
 
 const state = {
     stepGrid: emptyGrid(options.steps, 8, false),
     step: 0,
-    getPageIndex: () => Math.floor(state.step / 8) * 8
+    getQuadrant: () => [Math.floor(state.step / 8) * 8, 0]
 }
 
 const stepSequencer = new StepSequencer(options.tempo, options.steps, state.stepGrid)
@@ -39,10 +39,10 @@ const connection = midiLaunchpad.connect(undefined, false)
 connection.on('ready', launchpad => {
 
     function render() {
-        const canvas    = emptyGrid(8, 8, '0')
-        const pageIndex = state.getPageIndex()
-        const step      = state.step - pageIndex
-        const page      = state.stepGrid.slice(pageIndex, pageIndex + 8)
+        const canvas = emptyGrid(8, 8, '0')
+        const [offsetX, offsetY]  = state.getQuadrant()
+        const step   = state.step - offsetX
+        const page   = state.stepGrid.slice(offsetX, offsetX + 8)
         canvas.forEach((row, y) => {
             page.forEach((values, x) => {
                 row[x] = values[y] ? 'g' : '0'
@@ -63,8 +63,12 @@ connection.on('ready', launchpad => {
 
     launchpad.on('press', button => {
         if(!button.special) {
-            const i = state.getPageIndex()
-            state.stepGrid[i + button.x][button.y] = !state.stepGrid[button.x][button.y]
+            const [offsetX, offsetY] = state.getQuadrant()
+            const x = button.x + offsetX
+            const y = button.y + offsetY
+            if (x < options.steps && y < options.rows) {
+                state.stepGrid[x][y] = !state.stepGrid[x][y]
+            }
         } else {
             if (button.special[0] === 'mixer') {
                 state.stepGrid = emptyStepGrid()
