@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "midi": "^0.9.5",
-    "midi-launchpad": "^1.0.3",
+    "midi-launchpad": "github:granjow/node-midi-launchpad#ce3222cb611712f9df253baf76cbc194ffd834d9",
     "step-sequencer": "^0.1.1"
   }
 }
