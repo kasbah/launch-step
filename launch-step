@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+'use strict'
 const midi          = require('midi')
 const midiLaunchpad = require('midi-launchpad')
 const argv          = require('argv')
@@ -22,7 +23,7 @@ const args = argv.option([
     },
 ]).run()
 
-const options = {tempo: 10, steps: 8}
+const options = {tempo: 10, steps: 16}
 
 const state = {
     stepArray: emptyStepArray(),
@@ -37,14 +38,17 @@ const connection = midiLaunchpad.connect(undefined, false)
 connection.on('ready', launchpad => {
 
     function render(state) {
-        let canvas = emptyArray(8, 8)
+        const canvas = emptyArray(8, 8)
+        const pageIndex = getPageIndex(state)
+        const step = state.step - pageIndex
+        const page = state.stepArray.slice(pageIndex, pageIndex + 8)
         canvas.forEach((row, y) => {
-            state.stepArray.forEach((values, x) => {
+            page.forEach((values, x) => {
                 row[x] = values[y] ? 'g' : '0'
             })
         })
         canvas.forEach((row, y) => {
-            row[state.step] = state.stepArray[state.step][y] ? 'r' : 'y'
+            row[step] = page[step][y] ? 'r' : 'y'
         })
         launchpad.renderBytes(canvas.map(a => a.join('')))
     }
@@ -58,7 +62,7 @@ connection.on('ready', launchpad => {
 
     launchpad.on('press', button => {
         if(!button.special) {
-            state.stepArray[button.x][button.y] = !state.stepArray[button.x][button.y]
+            state.stepArray[getPageIndex(state) + button.x][button.y] = !state.stepArray[button.x][button.y]
         } else {
             if (button.special[0] === 'mixer') {
                 state.stepArray = emptyStepArray()
@@ -71,11 +75,15 @@ connection.on('ready', launchpad => {
 
 })
 
+function getPageIndex(state) {
+    return Math.floor(state.step / 8) * 8
+}
+
 function emptyArray(i, j) {
     return Array(i).fill().map(() => Array(j).fill())
 }
 
 function emptyStepArray() {
-    return emptyArray(8, options.steps).map(column => column.fill(false))
+    return emptyArray(options.steps, 8).map(column => column.fill(false))
 }
 
