@@ -23,7 +23,7 @@ const args = argv.option([
     },
 ]).run()
 
-const options = {tempo: 10, steps: 12, rows: 12}
+const options = {tempo: 10, steps: 8, rows: 22}
 
 const state = {
     stepGrid    : emptyStepGrid(),
@@ -49,6 +49,8 @@ const stepSequencer = new StepSequencer(options.tempo, options.steps, state.step
 //undefined = auto-connect, false = disable animation
 const connection = midiLaunchpad.connect(undefined, false)
 
+const pageColors = ['0', 'r', 'y', 'g', 'o']
+
 connection.on('ready', launchpad => {
 
     function render() {
@@ -65,7 +67,9 @@ connection.on('ready', launchpad => {
         canvas.forEach((row, y) => {
             row[step] = page[step][y] ? 'r' : 'y'
         })
-        console.log(state.row)
+        const level = offsetY / 8
+        const color = level ? 'r' : '0'
+        canvas.push([color, color])
         launchpad.renderBytes(canvas.map(a => a.join('')))
     }
 
@@ -85,7 +89,6 @@ connection.on('ready', launchpad => {
                 state.stepGrid[x][y] = !state.stepGrid[x][y]
             }
         } else {
-            console.log(button.special[0])
             switch(button.special[0]) {
                 case 'mixer':
                     state.stepGrid = emptyStepGrid()
