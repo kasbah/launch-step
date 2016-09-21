@@ -22,17 +22,12 @@ const args = argv.option([
     },
 ]).run()
 
-function emptyArray(i, j) {
-    return Array(i).fill().map(() => Array(j).fill())
-}
-
 const connection = midiLaunchpad.connect(undefined, false)
 
 const options = {tempo: 10, steps: 8}
 
-
 const state = {
-    stepArray: emptyArray(8, options.steps).map(column => column.fill(false)),
+    stepArray: emptyStepArray(),
     step: 0
 }
 
@@ -66,6 +61,9 @@ connection.on('ready', launchpad => {
         if(!button.special) {
             state.stepArray[button.x][button.y] = !state.stepArray[button.x][button.y]
         } else {
+            if (button.special[0] === 'mixer') {
+                state.stepArray = emptyStepArray()
+            }
         }
         render(state)
     })
@@ -73,3 +71,12 @@ connection.on('ready', launchpad => {
     stepSequencer.play()
 
 })
+
+function emptyArray(i, j) {
+    return Array(i).fill().map(() => Array(j).fill())
+}
+
+function emptyStepArray() {
+    return emptyArray(8, options.steps).map(column => column.fill(false))
+}
+
