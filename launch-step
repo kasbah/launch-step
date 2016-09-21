@@ -23,15 +23,15 @@ const args = argv.option([
     },
 ]).run()
 
-const options = {tempo: 10, steps: 16}
+const options = {tempo: 10, steps: 12}
 
 const state = {
-    stepArray: emptyStepArray(),
+    stepGrid: emptyGrid(options.steps, 8, false),
     step: 0,
     getPageIndex: () => Math.floor(state.step / 8) * 8
 }
 
-const stepSequencer = new StepSequencer(options.tempo, options.steps, state.stepArray)
+const stepSequencer = new StepSequencer(options.tempo, options.steps, state.stepGrid)
 
 //undefined = auto-connect, false = disable animation
 const connection = midiLaunchpad.connect(undefined, false)
@@ -39,10 +39,10 @@ const connection = midiLaunchpad.connect(undefined, false)
 connection.on('ready', launchpad => {
 
     function render() {
-        const canvas    = emptyArray(8, 8)
+        const canvas    = emptyGrid(8, 8, '0')
         const pageIndex = state.getPageIndex()
         const step      = state.step - pageIndex
-        const page      = state.stepArray.slice(pageIndex, pageIndex + 8)
+        const page      = state.stepGrid.slice(pageIndex, pageIndex + 8)
         canvas.forEach((row, y) => {
             page.forEach((values, x) => {
                 row[x] = values[y] ? 'g' : '0'
@@ -54,7 +54,7 @@ connection.on('ready', launchpad => {
         launchpad.renderBytes(canvas.map(a => a.join('')))
     }
 
-    state.stepArray.forEach((values, step) => {
+    state.stepGrid.forEach((values, step) => {
         stepSequencer.on(step, () => {
             state.step = step
             render()
@@ -64,10 +64,10 @@ connection.on('ready', launchpad => {
     launchpad.on('press', button => {
         if(!button.special) {
             const i = state.getPageIndex()
-            state.stepArray[i + button.x][button.y] = !state.stepArray[button.x][button.y]
+            state.stepGrid[i + button.x][button.y] = !state.stepGrid[button.x][button.y]
         } else {
             if (button.special[0] === 'mixer') {
-                state.stepArray = emptyStepArray()
+                state.stepGrid = emptyStepGrid()
             }
         }
         render()
@@ -77,11 +77,6 @@ connection.on('ready', launchpad => {
 
 })
 
-function emptyArray(i, j) {
-    return Array(i).fill().map(() => Array(j).fill())
+function emptyGrid(i, j, defaultValue) {
+    return Array(i).fill().map(() => Array(j).fill(defaultValue))
 }
-
-function emptyStepArray() {
-    return emptyArray(options.steps, 8).map(column => column.fill(false))
-}
-
