@@ -1,0 +1,18 @@
+{
+  "name": "midi-launchpad-step",
+  "version": "1.0.0",
+  "description": "Midi step sequencer for the Novation Launchpad",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "launchpad-mini": "^1.1.0",
+    "launchpadder": "0.0.5",
+    "midi": "^0.9.5",
+    "midi-launchpad": "^1.0.3",
+    "step-sequencer": "^0.1.1"
+  }
+}
