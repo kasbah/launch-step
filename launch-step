@@ -39,6 +39,13 @@ const args = argv.option([
         description: `The scale to apply to the rows. The default is "major-pentatonic". Options are: \n${scales.join('\n ')}`,
         example: "'launch-step -l major' or 'launch-step --scale=major'"
     },
+    {
+        name: 'root-note',
+        short: 'n',
+        type: 'string',
+        description: `The note to start the scale from. `,
+        example: "'launch-step -l major' or 'launch-step --scale=major'"
+    },
 ]).run()
 
 const options = {
