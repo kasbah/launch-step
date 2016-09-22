@@ -43,8 +43,8 @@ const args = argv.option([
         name: 'root-note',
         short: 'n',
         type: 'string',
-        description: `The note to start the scale from. `,
-        example: "'launch-step -l major' or 'launch-step --scale=major'"
+        description: `The note to start the scale from. Can be a MIDI note number (0-127) or a note name like 'A1', 'Bb1' or 'C#1'. The default is 'C4' (60).`,
+        example: "'launch-step -n A4' or 'launch-step --root-note=A4'"
     },
 ]).run()
 
@@ -53,23 +53,24 @@ const options = {
     steps : args.options.steps || 8,
     rows  : args.options.rows || 8,
     scale : args.options.scale || 'major-pentatonic',
+    root  : tonal.toMidi(args.options['root-note'] || 60),
 }
 
+if (isNaN(options.root) || options.root == null) {
+    console.error(`Invalid root note '${args.options['root-note']}' given`)
+    process.exit(1)
+}
 if (!(scales.includes(options.scale))) {
     console.error(`No scale named '${options.scale}', run 'launch-step --help' for a list of available scales.`)
     process.exit(1)
 }
-console.log(`Starting ${options.steps} step sequencer with ${options.rows} rows at ${options.tempo} bpm using ${options.scale} scale`)
+console.log(`Starting ${options.steps} step sequencer with ${options.rows} rows at ${options.tempo} bpm using ${options.scale} scale starting with ${tonal.fromMidi(options.root)}(${options.root}).`)
 
 const midiInput = new midi.input()
 const midiOutput = new midi.output()
 
 midiInput.openVirtualPort('launch-step input')
 midiOutput.openVirtualPort('launch-step output')
-
-
-const input = midi.createReadStream(midiInput)
-const output = midi.createWriteStream(midiOutput)
 
 const state = {
     stepGrid : emptyStepGrid(),
