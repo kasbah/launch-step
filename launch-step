@@ -4,11 +4,14 @@ const midi          = require('midi')
 const midiLaunchpad = require('midi-launchpad')
 const argv          = require('argv')
 const StepSequencer = require('step-sequencer')
-const tonalScales   = require('tonal-scales')
-const tonal         = require('tonal')
+const tonalScale    = require('tonal-scale')
+const tonalMidi     = require('tonal-midi')
+const tonalRange    = require('tonal-range')
 const kebabCase     = require('lodash.kebabcase')
 
-const scales = tonalScales.names().map(n => kebabCase(n))
+const scalesFromKebab = {}
+tonalScale.names().forEach(n => scalesFromKebab[kebabCase(n)] = n)
+const supportedScales = Object.keys(scalesFromKebab)
 
 const args = argv.option([
     {
@@ -36,7 +39,7 @@ const args = argv.option([
         name: 'scale',
         short: 'l',
         type: 'string',
-        description: `The scale to apply to the rows. The default is "major-pentatonic". Options are: \n${scales.join('\n ')}`,
+        description: `The scale to apply to the rows. The default is "major-pentatonic". Options are: \n${supportedScales.join('\n ')}`,
         example: "'launch-step -l major' or 'launch-step --scale=major'"
     },
     {
@@ -53,18 +56,21 @@ const options = {
     steps : args.options.steps || 8,
     rows  : args.options.rows || 8,
     scale : args.options.scale || 'major-pentatonic',
-    root  : tonal.toMidi(args.options['root-note'] || 60),
+    root  : tonalMidi.toMidi(args.options['root-note'] || 60),
 }
 
 if (isNaN(options.root) || options.root == null) {
     console.error(`Invalid root note '${args.options['root-note']}' given`)
     process.exit(1)
 }
-if (!(scales.includes(options.scale))) {
-    console.error(`No scale named '${options.scale}', run 'launch-step --help' for a list of available scales.`)
+if (!(supportedScales.includes(options.scale))) {
+    console.error(`No scale named '${options.scale}', run 'launch-step --help' `
+                  + `for a list of available scales.`)
     process.exit(1)
 }
-console.log(`Starting ${options.steps} step sequencer with ${options.rows} rows at ${options.tempo} bpm using ${options.scale} scale starting with ${tonal.fromMidi(options.root)}(${options.root}).`)
+console.log(`Starting ${options.steps} step sequencer with ${options.rows} rows `
+            + `at ${options.tempo} bpm using ${options.scale} scale starting with `
+            + `${tonalMidi.fromMidi(options.root)}(${options.root}).`)
 
 const midiInput = new midi.input()
 const midiOutput = new midi.output()

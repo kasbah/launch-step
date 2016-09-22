@@ -14,9 +14,9 @@
     "midi": "^0.9.5",
     "midi-launchpad": "github:granjow/node-midi-launchpad#ce3222cb611712f9df253baf76cbc194ffd834d9",
     "step-sequencer": "github:kasbah/step-sequencer#eab50f580282ee0f4b9ded4bc21b02cf555afe09",
-    "tonal": "^0.50.3",
-    "tonal-ranges": "^0.50.5",
-    "tonal-scales": "^0.50.5"
+    "tonal-midi": "^0.50.7",
+    "tonal-range": "^0.51.1",
+    "tonal-scale": "^0.50.0"
   },
   "bin": {
     "launch-step": "launch-step"
