@@ -18,7 +18,8 @@ const args = argv.option([
         name: 'tempo',
         short: 't',
         type: 'string',
-        description: 'Tempo in steps per minute. The default is 90. Can be set to "ext" to use an external midi clock signal.',
+        description: 'Tempo in steps per minute. The default is 90. Can be set '
+            + 'to "ext" to use an external midi clock signal.',
         example: "'launch-step -t 133.2' or 'launch-step --tempo=133.2'"
     },
     {
@@ -32,21 +33,25 @@ const args = argv.option([
         name: 'rows',
         short: 'r',
         type: 'int',
-        description: 'Number of rows i.e. tracks in the sequence. The default is 8.',
+        description: 'Number of rows i.e. tracks in the sequence. The default '
+            + 'is 8.',
         example: "'launch-step -r 12' or 'launch-step --rows=12'"
     },
     {
         name: 'scale',
         short: 'l',
         type: 'string',
-        description: `The scale to apply to the rows. The default is "major-pentatonic". Options are: \n${supportedScales.join('\n ')}`,
+        description: `The scale to apply to the rows. The default is `
+            + `"major-pentatonic". Options are: \n${supportedScales.join('\n ')}`,
         example: "'launch-step -l major' or 'launch-step --scale=major'"
     },
     {
         name: 'root-note',
         short: 'n',
         type: 'string',
-        description: `The note to start the scale from. Can be a MIDI note number (0-127) or a note name like 'A1', 'Bb1' or 'C#1'. The default is 'C4' (60).`,
+        description: `The note to start the scale from. Can be a MIDI note `
+            + `number (0-127) or a note name like 'A1', 'Bb1' or 'C#1'. The `
+            + `default is 'C4' (60).`,
         example: "'launch-step -n A4' or 'launch-step --root-note=A4'"
     },
 ]).run()
