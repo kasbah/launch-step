@@ -183,12 +183,12 @@ connection.on('ready', launchpad => {
         launchpad.renderBytes(canvas.map(a => a.join('')))
     }
 
-    Array(options.steps).fill().forEach((x, step) => {
+    for (let step = 0; step < options.steps; step++) {
         stepSequencer.on(step, () => {
             store.dispatch({type: 'set-step', value: step})
             render()
         })
-    })
+    }
 
     launchpad.on('press', button => {
         if(!button.special) {
