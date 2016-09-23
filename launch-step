@@ -4,16 +4,12 @@ const midi          = require('midi')
 const midiLaunchpad = require('midi-launchpad')
 const argv          = require('argv')
 const StepSequencer = require('step-sequencer')
-const tonalScale    = require('tonal-scale')
 const tonalMidi     = require('tonal-midi')
 const tonalRange    = require('tonal-range')
-const kebabCase     = require('lodash.kebabcase')
-const redux         = require('redux')
 const {noteOn, noteOff} = require('midi-help')
 
-const scaleFromKebab = {}
-tonalScale.names().forEach(n => scaleFromKebab[kebabCase(n)] = n)
-const supportedScales = Object.keys(scaleFromKebab).sort()
+const util = require('./util')
+const scales = require('./scales')
 
 const args = argv.option([
     {
@@ -41,7 +37,7 @@ const args = argv.option([
         name: 'scale',
         short: 's',
         type: 'string',
-        description: `The scale to apply to the rows. The default is 'major-pentatonic'. Options are: \n\n ${supportedScales.join('\n')}`,
+        description: `The scale to apply to the rows. The default is 'major-pentatonic'. Options are: \n\n ${scales.supportedScales.join('\n')}`,
         example: "'launch-step -s major' or 'launch-step --scale=major'"
     },
     {
@@ -65,11 +61,14 @@ if (isNaN(options.root) || options.root == null) {
     console.error(`Invalid root note '${args.options['root-note']}' given. Should be a MIDI note number like 64 or a note name like A3, C#3 or Eb2.`)
     process.exit(1)
 }
-if (!(supportedScales.includes(options.scale))) {
+if (!(scales.supportedScales.includes(options.scale))) {
     console.error(`No scale named '${options.scale}', run 'launch-step --help'for a list of available scales.`)
     process.exit(1)
 }
 console.log(`Starting ${options.steps} step sequencer at ${options.tempo} bpm, ${options.stepsPerBeat} steps per beat, using ${options.scale} scale starting with MIDI note ${options.root} (${tonalMidi.fromMidi(options.root)}).`)
+
+
+const store = require('./state')(options)
 
 const midiInput = new midi.input()
 const midiOutput = new midi.output()
@@ -77,63 +76,6 @@ const midiOutput = new midi.output()
 midiInput.openVirtualPort('launch-step input')
 midiOutput.openVirtualPort('launch-step output')
 
-function emptyStepGrid(rows) {
-    return emptyGrid(options.steps, rows, false)
-}
-
-function initState() {
-    const noteRows = getNoteRows(options.scale, options.root)
-    const stepGrid = emptyStepGrid(noteRows.length)
-    return {
-        noteRows : noteRows,
-        stepGrid : stepGrid,
-        step     : 0,
-        row      : 0,
-        duration : 400, //ms
-        getOffsets: function() {
-            return [
-                Math.floor(this.step / 8) * 8,
-                rowToNoteRow(this.noteRows, Math.floor(this.row / 8) * 8)
-            ]
-        }
-   }
-}
-
-function rowToNoteRow(noteRows, row) {
-    return noteRows.indexOf(options.root) - 7 + row
-}
-
-function reducer(state, action) {
-    if (state == null) {
-        state = initState()
-    }
-    switch(action.type) {
-        case 'set-step':
-            state.step = action.value
-            return state
-        case 'clear-grid':
-            state.stepGrid = emptyStepGrid(state.noteRows.length)
-            return state
-        case 'page-up': {
-            const row = state.row - 8
-            if (state.noteRows[rowToNoteRow(state.noteRows, row)] == null) {
-                return state
-            }
-            state.row = row
-            return state
-        }
-        case 'page-down': {
-            const row = state.row + 8
-            if (state.noteRows[rowToNoteRow(state.noteRows, row)] == null) {
-                return state
-            }
-            state.row = row
-            return state
-        }
-    }
-}
-
-const store = redux.createStore(reducer)
 
 const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.steps)
 
@@ -154,7 +96,7 @@ connection.on('ready', launchpad => {
                 }, state.duration)
             }
         })
-        const canvas = emptyGrid(8, 8, '0')
+        const canvas = util.emptyGrid(8, 8, '0')
         const [offsetX, offsetY] = state.getOffsets()
         const step = state.step - offsetX
         const page = state.stepGrid.slice(offsetX, offsetX + 8)
@@ -219,14 +161,3 @@ connection.on('ready', launchpad => {
 
 })
 
-function getNoteRows(scaleKebab, rootNote) {
-    const name  = scaleFromKebab[scaleKebab]
-    const tonal = tonalMidi.fromMidi(rootNote)
-    const scale = tonalScale.build(name, tonal)
-    const range = tonalRange.scaleRange(scale, '127 0')
-    return range.map(tonalMidi.toMidi)
-}
-
-function emptyGrid(i, j, defaultValue) {
-    return Array(i).fill().map(() => Array(j).fill(defaultValue))
-}
