@@ -101,18 +101,8 @@ const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, op
 const connection = midiLaunchpad.connect(undefined, false)
 
 connection.on('ready', launchpad => {
-
-    function render() {
+    function renderLeds() {
         const state = store.getState()
-        state.stepGrid[state.step].forEach((down, index) => {
-            if (down) {
-                const note = state.noteRows[index]
-                midiOutput.sendMessage(noteOn(note, 127))
-                setTimeout(() => {
-                    midiOutput.sendMessage(noteOff(note, 127))
-                }, state.duration)
-            }
-        })
         const canvas = util.emptyGrid(8, 8, '0')
         const [offsetX, offsetY] = state.getOffsets()
         const step = state.step - offsetX
@@ -141,13 +131,25 @@ connection.on('ready', launchpad => {
         }
         launchpad.renderBytes(canvas.map(a => a.join('')))
     }
+    function renderMidi() {
+        const state = store.getState()
+        state.stepGrid[state.step].forEach((down, index) => {
+            if (down) {
+                const note = state.noteRows[index]
+                midiOutput.sendMessage(noteOn(note, 127))
+                setTimeout(() => {
+                    midiOutput.sendMessage(noteOff(note, 127))
+                }, state.duration)
+            }
+        })
+        stepSequencer.setTempo(state.tempo * options.stepsPerBeat)
+    }
 
     for (let step = 0; step < options.steps; step++) {
         stepSequencer.on(step, () => {
             store.dispatch({type: 'set-step', value: step})
-            const state = store.getState()
-            stepSequencer.setTempo(state.tempo * options.stepsPerBeat)
-            render()
+            renderMidi()
+            renderLeds()
         })
     }
 
@@ -173,7 +175,7 @@ connection.on('ready', launchpad => {
                     break
             }
         }
-        render()
+        renderLeds()
     })
 
     stepSequencer.play()
