@@ -24,7 +24,7 @@ const args = argv.option([
         short: 'p',
         type: 'int',
         description: 'Number of steps per beat. The default is 2.',
-        example: "'launch-step -p 4 or 'launch-step --steps-per-beat=4'"
+        example: "'launch-step -p 4' or 'launch-step --steps-per-beat=4'"
     },
     {
         name: 'number-of-steps',
@@ -101,6 +101,20 @@ const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, op
 const connection = midiLaunchpad.connect(undefined, false)
 
 connection.on('ready', launchpad => {
+    process.on('SIGINT', () => {
+        stepSequencer.stop()
+        const state = store.getState()
+        //turn off any playing notes
+        state.playing.forEach((playing, y) => {
+            if (playing) {
+                const note = state.noteRows[y]
+                midiOutput.sendMessage(noteOff(note, 127))
+                store.dispatch({type: 'set-off', y})
+            }
+        })
+        launchpad.clear()
+        process.exit()
+    })
     function renderLeds() {
         const state = store.getState()
         const canvas = util.emptyGrid(8, 8, '0')
@@ -108,6 +122,7 @@ connection.on('ready', launchpad => {
         const step = state.step - offsetX
         const page = state.stepGrid.slice(offsetX, offsetX + 8)
             .map(column => column.slice(offsetY, offsetY + 8))
+        // g = green, r = red, o = orange, y = yellow, 0 = off
         canvas.forEach((row, y) => {
             page.forEach((values, x) => {
                 row[x] = values[y] ? 'g' : '0'
@@ -116,6 +131,7 @@ connection.on('ready', launchpad => {
         canvas.forEach((row, y) => {
             row[step] = page[step][y] ? 'r' : 'y'
         })
+        //set the LEDs on the cursor keys according to page level
         const level = state.row / 8
         if (level !== 0) {
             const c = ['g', 'y', 'o', 'r', 'r'][Math.abs(level) - 1]
@@ -133,13 +149,15 @@ connection.on('ready', launchpad => {
     }
     function renderMidi() {
         const state = store.getState()
-        state.stepGrid[state.step].forEach((down, index) => {
+        state.stepGrid[state.step].forEach((down, y) => {
             if (down) {
-                const note = state.noteRows[index]
+                const note = state.noteRows[y]
                 midiOutput.sendMessage(noteOn(note, 127))
                 setTimeout(() => {
                     midiOutput.sendMessage(noteOff(note, 127))
+                    store.dispatch({type: 'set-off', value:y})
                 }, state.duration)
+                store.dispatch({type: 'set-playing', value:y})
             }
         })
         stepSequencer.setTempo(state.tempo * options.stepsPerBeat)

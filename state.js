@@ -7,9 +7,11 @@ module.exports = function (options) {
     function initState() {
         const noteRows = scales.getAllNotes(options.scale, options.root)
         const stepGrid = emptyStepGrid(noteRows.length)
+        const playing  = noteRows.map(() => false)
         return {
             noteRows : noteRows,
             stepGrid : stepGrid,
+            playing  : playing,
             step     : 0,
             row      : 0,
             duration : 400, //ms
@@ -33,6 +35,16 @@ module.exports = function (options) {
                 const y = action.value[1]
                 state.stepGrid[x][y] = !state.stepGrid[x][y]
                 return state
+            case 'set-playing': {
+                const y = action.value
+                state.playing[y] = true
+                return state
+            }
+            case 'set-off': {
+                const y = action.value
+                state.playing[y] = false
+                return state
+            }
             case 'set-step':
                 state.step = action.value
                 return state
