@@ -56,7 +56,6 @@ const options = {
     tempo        : Number(args.options.tempo || 120),
     steps        : args.options['number-of-steps'] || 8,
     stepsPerBeat : args.options['steps-per-beat'] || 2,
-    rows         : args.options.rows || 32,
     scale        : args.options.scale || 'major-pentatonic',
     root         : tonalMidi.toMidi(args.options['root-note'] || 60),
 }
@@ -78,27 +77,25 @@ midiInput.openVirtualPort('launch-step input')
 midiOutput.openVirtualPort('launch-step output')
 
 const state = {
-    noteRows : getNoteRows(options.scale, options.root, options.rows),
-    stepGrid : emptyStepGrid(),
+    noteRows : getNoteRows(options.scale, options.root),
     step     : 0,
     row      : 0,
     duration : 400, //ms
+    emptyStepGrid: function () {
+        this.stepGrid = emptyGrid(options.steps, this.noteRows.length, false)
+    },
     moveViewDown: function () {
         this.row += 8
-        if (this.row >= options.rows) {
-            this.row = Math.floor((this.row - options.rows) / 8)
-        }
     },
     moveViewUp: function () {
         this.row -= 8
-        if (this.row < 0) {
-            this.row = options.rows + this.row
-        }
     },
     getOffsets: function() {
-        return [Math.floor(this.step / 8) * 8, Math.floor(this.row / 8) * 8]
+        return [Math.floor(this.step / 8) * 8, this.noteRows.indexOf(options.root) + Math.floor(this.row / 8) * 8]
     }
 }
+
+state.emptyStepGrid()
 
 const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.steps, state.stepGrid)
 
@@ -130,7 +127,7 @@ connection.on('ready', launchpad => {
         canvas.forEach((row, y) => {
             row[step] = page[step][y] ? 'r' : 'y'
         })
-        const level = offsetY / 8
+        const level = state.row / 8
         const color = level ? 'r' : '0'
         canvas.push([color, color])
         launchpad.renderBytes(canvas.map(a => a.join('')))
@@ -148,13 +145,13 @@ connection.on('ready', launchpad => {
             const [offsetX, offsetY] = state.getOffsets()
             const x = button.x + offsetX
             const y = button.y + offsetY
-            if (x < options.steps && y < options.rows) {
+            if (x < options.steps && y < state.noteRows.length) {
                 state.stepGrid[x][y] = !state.stepGrid[x][y]
             }
         } else {
             switch(button.special[0]) {
                 case 'mixer':
-                    state.stepGrid = emptyStepGrid()
+                    state.emptyStepGrid()
                     break
                 case 'down':
                     state.moveViewDown()
@@ -171,18 +168,14 @@ connection.on('ready', launchpad => {
 
 })
 
-function getNoteRows(scaleKebab, rootNote, numberOfRows) {
+function getNoteRows(scaleKebab, rootNote) {
     const name  = scaleFromKebab[scaleKebab]
     const tonal = tonalMidi.fromMidi(rootNote)
     const scale = tonalScale.build(name, tonal)
-    const range = tonalRange.scaleRange(scale, `${rootNote} 127`)
-    return range.slice(0, numberOfRows).map(tonalMidi.toMidi)
+    const range = tonalRange.scaleRange(scale, '0 127')
+    return range.map(tonalMidi.toMidi)
 }
 
 function emptyGrid(i, j, defaultValue) {
     return Array(i).fill().map(() => Array(j).fill(defaultValue))
-}
-
-function emptyStepGrid() {
-    return emptyGrid(options.steps, 8, false)
 }
