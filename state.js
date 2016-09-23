@@ -13,6 +13,7 @@ module.exports = function (options) {
             step     : 0,
             row      : 0,
             duration : 400, //ms
+            tempo    : options.tempo === 'ext' ? 0 : options.tempo,
             getOffsets: function() {
                 return [
                     Math.floor(this.step / 8) * 8,
@@ -29,6 +30,9 @@ module.exports = function (options) {
         switch(action.type) {
             case 'set-step':
                 state.step = action.value
+                return state
+            case 'set-tempo':
+                state.tempo = action.value
                 return state
             case 'clear-grid':
                 state.stepGrid = emptyStepGrid(state.noteRows.length)

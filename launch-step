@@ -50,7 +50,7 @@ const args = argv.option([
 ]).run()
 
 const options = {
-    tempo        : Number(args.options.tempo || 120),
+    tempo        : args.options.tempo === 'ext' ? 'ext' : Number(args.options.tempo || 120),
     steps        : args.options['number-of-steps'] || 8,
     stepsPerBeat : args.options['steps-per-beat'] || 2,
     scale        : args.options.scale || 'major-pentatonic',
@@ -70,15 +70,32 @@ console.log(`Starting ${options.steps} step sequencer at ${options.tempo} bpm, $
 
 const store = require('./state')(options)
 
-const midiInput = new midi.input()
 const midiOutput = new midi.output()
-
-midiInput.openVirtualPort('launch-step input')
 midiOutput.openVirtualPort('launch-step output')
+
+if (options.tempo === 'ext') {
+    const midiInput = new midi.input()
+    //don't ignore midi clock messages
+    midiInput.ignoreTypes(true, false, true)
+    midiInput.openVirtualPort('launch-step clock input')
+    const deltas = []
+    midiInput.on('message', (deltaTime, message)=> {
+        if (deltaTime > 0.00000) {
+            deltas.push(deltaTime)
+        }
+
+        const total = deltas.reduce((a, b) => a + b, 0)
+        const bpm   = Math.round((600 / 24) / (total / deltas.length)) / 10
+        store.dispatch({type: 'set-tempo', value: bpm})
+
+        if (deltas.length >= 96) {
+            deltas.shift()
+        }
+    })
+}
 
 
 const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.steps)
-
 
 //undefined = auto-connect, false = disable animation
 const connection = midiLaunchpad.connect(undefined, false)
@@ -128,6 +145,8 @@ connection.on('ready', launchpad => {
     for (let step = 0; step < options.steps; step++) {
         stepSequencer.on(step, () => {
             store.dispatch({type: 'set-step', value: step})
+            const state = store.getState()
+            stepSequencer.setTempo(state.tempo * options.stepsPerBeat)
             render()
         })
     }
