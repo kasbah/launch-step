@@ -12,6 +12,7 @@
     "argv": "github:kasbah/argv#c0f809030fffeb39375a3a804e612975f68680c8",
     "lodash.kebabcase": "^4.1.1",
     "midi": "^0.9.5",
+    "midi-help": "^0.2.1",
     "midi-launchpad": "github:granjow/node-midi-launchpad#ce3222cb611712f9df253baf76cbc194ffd834d9",
     "step-sequencer": "github:kasbah/step-sequencer#eab50f580282ee0f4b9ded4bc21b02cf555afe09",
     "tonal-midi": "^0.50.7",

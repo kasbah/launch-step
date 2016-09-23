@@ -8,10 +8,11 @@ const tonalScale    = require('tonal-scale')
 const tonalMidi     = require('tonal-midi')
 const tonalRange    = require('tonal-range')
 const kebabCase     = require('lodash.kebabcase')
+const {noteOn, noteOff} = require('midi-help')
 
-const scalesFromKebab = {}
-tonalScale.names().forEach(n => scalesFromKebab[kebabCase(n)] = n)
-const supportedScales = Object.keys(scalesFromKebab)
+const scaleFromKebab = {}
+tonalScale.names().forEach(n => scaleFromKebab[kebabCase(n)] = n)
+const supportedScales = Object.keys(scaleFromKebab)
 
 const args = argv.option([
     {
@@ -84,9 +85,11 @@ midiInput.openVirtualPort('launch-step input')
 midiOutput.openVirtualPort('launch-step output')
 
 const state = {
+    noteRows : getNoteRows(options.scale, options.root, options.rows),
     stepGrid : emptyStepGrid(),
     step     : 0,
     row      : 0,
+    duration : 400, //ms
     moveViewDown: function () {
         this.row += 8
         if (this.row >= options.rows) {
@@ -106,12 +109,21 @@ const state = {
 
 const stepSequencer = new StepSequencer(options.tempo, options.steps, state.stepGrid)
 
+
 //undefined = auto-connect, false = disable animation
 const connection = midiLaunchpad.connect(undefined, false)
 
 connection.on('ready', launchpad => {
 
     function render() {
+        state.stepGrid[state.step].forEach((down, index) => {
+            if (down) {
+                midiOutput.sendMessage(noteOn(state.noteRows[index], 127))
+                setTimeout(() => {
+                    midiOutput.sendMessage(noteOff(state.noteRows[index], 127))
+                }, state.duration)
+            }
+        })
         const canvas = emptyGrid(8, 8, '0')
         const [offsetX, offsetY] = state.getOffsets()
         const step = state.step - offsetX
@@ -165,6 +177,14 @@ connection.on('ready', launchpad => {
     stepSequencer.play()
 
 })
+
+function getNoteRows(scaleKebab, rootNote, numberOfRows) {
+    const name  = scaleFromKebab[scaleKebab]
+    const tonal = tonalMidi.fromMidi(rootNote)
+    const scale = tonalScale.build(name, tonal)
+    const range = tonalRange.scaleRange(scale, `${rootNote} 127`)
+    return range.slice(0, numberOfRows).map(tonalMidi.toMidi)
+}
 
 function emptyGrid(i, j, defaultValue) {
     return Array(i).fill().map(() => Array(j).fill(defaultValue))
