@@ -135,7 +135,7 @@ function reducer(state, action) {
 
 const store = redux.createStore(reducer)
 
-const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.steps, initState().stepGrid)
+const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.steps)
 
 
 //undefined = auto-connect, false = disable animation
