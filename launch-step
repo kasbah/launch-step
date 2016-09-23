@@ -158,7 +158,7 @@ connection.on('ready', launchpad => {
             const x = button.x + offsetX
             const y = button.y + offsetY
             if (x < options.steps && y < state.noteRows.length) {
-                state.stepGrid[x][y] = !state.stepGrid[x][y]
+                store.dispatch({type:'toggle-button', value: [x,y]})
             }
         } else {
             switch(button.special[0]) {

@@ -28,6 +28,11 @@ module.exports = function (options) {
             state = initState()
         }
         switch(action.type) {
+            case 'toggle-button':
+                const x = action.value[0]
+                const y = action.value[1]
+                state.stepGrid[x][y] = !state.stepGrid[x][y]
+                return state
             case 'set-step':
                 state.step = action.value
                 return state
