@@ -93,7 +93,7 @@ function initState() {
         getOffsets: function() {
             return [
                 Math.floor(this.step / 8) * 8,
-                this.noteRows.indexOf(options.root) + Math.floor(this.row / 8) * 8
+                this.noteRows.indexOf(options.root) - 7 + Math.floor(this.row / 8) * 8
             ]
         }
    }
@@ -111,10 +111,10 @@ function reducer(state, action) {
             state.stepGrid = emptyStepGrid(state.noteRows.length)
             return state
         case 'page-up':
-            state.row += 8
+            state.row -= 8
             return state
         case 'page-down':
-            state.row -= 8
+            state.row += 8
             return state
     }
 }
@@ -158,8 +158,6 @@ connection.on('ready', launchpad => {
         launchpad.renderBytes(canvas.map(a => a.join('')))
     }
 
-
-
     Array(options.steps).fill().forEach((x, step) => {
         stepSequencer.on(step, () => {
             store.dispatch({type: 'set-step', value: step})
@@ -200,7 +198,7 @@ function getNoteRows(scaleKebab, rootNote) {
     const name  = scaleFromKebab[scaleKebab]
     const tonal = tonalMidi.fromMidi(rootNote)
     const scale = tonalScale.build(name, tonal)
-    const range = tonalRange.scaleRange(scale, '0 127')
+    const range = tonalRange.scaleRange(scale, '127 0')
     return range.map(tonalMidi.toMidi)
 }
 
