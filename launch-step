@@ -169,8 +169,10 @@ connection.on('ready', launchpad => {
         })
         const level = state.row / 8
         if (level !== 0) {
-            const c = ['y', 'o', 'r'][Math.abs(level) - 1]
-            if (level < 0) {
+            const c = ['g', 'y', 'o', 'r', 'r'][Math.abs(level) - 1]
+            if (Math.abs(level) > 4) {
+                canvas.push([c, c])
+            } else if (level < 0) {
                 canvas.push([c, '0'])
             } else {
                 canvas.push(['0', c])
