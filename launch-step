@@ -12,71 +12,64 @@ const {noteOn, noteOff} = require('midi-help')
 
 const scaleFromKebab = {}
 tonalScale.names().forEach(n => scaleFromKebab[kebabCase(n)] = n)
-const supportedScales = Object.keys(scaleFromKebab)
+const supportedScales = Object.keys(scaleFromKebab).sort()
 
 const args = argv.option([
     {
         name: 'tempo',
         short: 't',
         type: 'string',
-        description: 'Tempo in steps per minute. The default is 90. Can be set '
-            + 'to "ext" to use an external midi clock signal.',
+        description: 'Tempo in beats per minute. The default is 120. Can be set to "ext" to use an external midi clock signal.',
         example: "'launch-step -t 133.2' or 'launch-step --tempo=133.2'"
     },
     {
-        name: 'steps',
-        short: 's',
+        name: 'steps-per-beat',
+        short: 'p',
         type: 'int',
-        description: 'Number of steps in the sequence. The default is 8.',
-        example: "'launch-step -s 12' or 'launch-step --steps=12'"
+        description: 'Number of steps per beat. The default is 2.',
+        example: "'launch-step -p 4 or 'launch-step --steps-per-beat=4'"
     },
     {
-        name: 'rows',
-        short: 'r',
+        name: 'number-of-steps',
+        short: 'n',
         type: 'int',
-        description: 'Number of rows i.e. tracks in the sequence. The default '
-            + 'is 8.',
-        example: "'launch-step -r 12' or 'launch-step --rows=12'"
+        description: 'Number of steps in the sequence. The default is 8.',
+        example: "'launch-step -n 12' or 'launch-step --number-of-steps=12'"
     },
     {
         name: 'scale',
-        short: 'l',
+        short: 's',
         type: 'string',
-        description: `The scale to apply to the rows. The default is `
-            + `"major-pentatonic". Options are: \n${supportedScales.join('\n ')}`,
-        example: "'launch-step -l major' or 'launch-step --scale=major'"
+        description: `The scale to apply to the rows. The default is 'major-pentatonic'. Options are: \n\n ${supportedScales.join('\n')}`,
+        example: "'launch-step -s major' or 'launch-step --scale=major'"
     },
     {
         name: 'root-note',
         short: 'n',
         type: 'string',
-        description: `The note to start the scale from. Can be a MIDI note `
-            + `number (0-127) or a note name like 'A1', 'Bb1' or 'C#1'. The `
-            + `default is 'C4' (60).`,
+        description: "The note to start the scale from. Can be a MIDI note number (0-127) or a note name like 'A1', 'Bb1' or 'C#1'. The default is MIDI note 60 (C4).",
         example: "'launch-step -n A4' or 'launch-step --root-note=A4'"
     },
 ]).run()
 
 const options = {
-    tempo : Number(args.options.tempo || 90),
-    steps : args.options.steps || 8,
-    rows  : args.options.rows || 8,
-    scale : args.options.scale || 'major-pentatonic',
-    root  : tonalMidi.toMidi(args.options['root-note'] || 60),
+    tempo        : Number(args.options.tempo || 120),
+    steps        : args.options['number-of-steps'] || 8,
+    stepsPerBeat : args.options['steps-per-beat'] || 2,
+    rows         : args.options.rows || 32,
+    scale        : args.options.scale || 'major-pentatonic',
+    root         : tonalMidi.toMidi(args.options['root-note'] || 60),
 }
 
 if (isNaN(options.root) || options.root == null) {
-    console.error(`Invalid root note '${args.options['root-note']}' given`)
+    console.error(`Invalid root note '${args.options['root-note']}' given. Should be a MIDI note number like 64 or a note name like A3, C#3 or Eb2.`)
     process.exit(1)
 }
 if (!(supportedScales.includes(options.scale))) {
-    console.error(`No scale named '${options.scale}', run 'launch-step --help' `
-                  + `for a list of available scales.`)
+    console.error(`No scale named '${options.scale}', run 'launch-step --help'for a list of available scales.`)
     process.exit(1)
 }
-console.log(`Starting ${options.steps} step sequencer with ${options.rows} rows `
-            + `at ${options.tempo} bpm using ${options.scale} scale starting with `
-            + `${tonalMidi.fromMidi(options.root)}(${options.root}).`)
+console.log(`Starting ${options.steps} step sequencer at ${options.tempo} bpm, ${options.stepsPerBeat} steps per beat, using ${options.scale} scale starting with MIDI note ${options.root} (${tonalMidi.fromMidi(options.root)}).`)
 
 const midiInput = new midi.input()
 const midiOutput = new midi.output()
@@ -107,7 +100,7 @@ const state = {
     }
 }
 
-const stepSequencer = new StepSequencer(options.tempo, options.steps, state.stepGrid)
+const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.steps, state.stepGrid)
 
 
 //undefined = auto-connect, false = disable animation
