@@ -8,6 +8,7 @@ const tonalScale    = require('tonal-scale')
 const tonalMidi     = require('tonal-midi')
 const tonalRange    = require('tonal-range')
 const kebabCase     = require('lodash.kebabcase')
+const redux         = require('redux')
 const {noteOn, noteOff} = require('midi-help')
 
 const scaleFromKebab = {}
@@ -76,28 +77,51 @@ const midiOutput = new midi.output()
 midiInput.openVirtualPort('launch-step input')
 midiOutput.openVirtualPort('launch-step output')
 
-const state = {
-    noteRows : getNoteRows(options.scale, options.root),
-    step     : 0,
-    row      : 0,
-    duration : 400, //ms
-    emptyStepGrid: function () {
-        this.stepGrid = emptyGrid(options.steps, this.noteRows.length, false)
-    },
-    moveViewDown: function () {
-        this.row += 8
-    },
-    moveViewUp: function () {
-        this.row -= 8
-    },
-    getOffsets: function() {
-        return [Math.floor(this.step / 8) * 8, this.noteRows.indexOf(options.root) + Math.floor(this.row / 8) * 8]
+function emptyStepGrid(rows) {
+    return emptyGrid(options.steps, rows, false)
+}
+
+function initState() {
+    const noteRows = getNoteRows(options.scale, options.root)
+    const stepGrid = emptyStepGrid(noteRows.length)
+    return {
+        noteRows : noteRows,
+        stepGrid : stepGrid,
+        step     : 0,
+        row      : 0,
+        duration : 400, //ms
+        getOffsets: function() {
+            return [
+                Math.floor(this.step / 8) * 8,
+                this.noteRows.indexOf(options.root) + Math.floor(this.row / 8) * 8
+            ]
+        }
+   }
+}
+
+function reducer(state, action) {
+    if (state == null) {
+        state = initState()
+    }
+    switch(action.type) {
+        case 'set-step':
+            state.step = action.value
+            return state
+        case 'clear-grid':
+            state.stepGrid = emptyStepGrid(state.noteRows.length)
+            return state
+        case 'page-up':
+            state.row += 8
+            return state
+        case 'page-down':
+            state.row -= 8
+            return state
     }
 }
 
-state.emptyStepGrid()
+const store = redux.createStore(reducer)
 
-const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.steps, state.stepGrid)
+const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.steps, initState().stepGrid)
 
 
 //undefined = auto-connect, false = disable animation
@@ -106,6 +130,7 @@ const connection = midiLaunchpad.connect(undefined, false)
 connection.on('ready', launchpad => {
 
     function render() {
+        const state = store.getState()
         state.stepGrid[state.step].forEach((down, index) => {
             if (down) {
                 midiOutput.sendMessage(noteOn(state.noteRows[index], 127))
@@ -133,15 +158,18 @@ connection.on('ready', launchpad => {
         launchpad.renderBytes(canvas.map(a => a.join('')))
     }
 
-    state.stepGrid.forEach((values, step) => {
+
+
+    Array(options.steps).fill().forEach((x, step) => {
         stepSequencer.on(step, () => {
-            state.step = step
+            store.dispatch({type: 'set-step', value: step})
             render()
         })
     })
 
     launchpad.on('press', button => {
         if(!button.special) {
+            const state = store.getState()
             const [offsetX, offsetY] = state.getOffsets()
             const x = button.x + offsetX
             const y = button.y + offsetY
@@ -151,13 +179,13 @@ connection.on('ready', launchpad => {
         } else {
             switch(button.special[0]) {
                 case 'mixer':
-                    state.emptyStepGrid()
+                    store.dispatch({type:'clear-grid'})
                     break
                 case 'down':
-                    state.moveViewDown()
+                    store.dispatch({type:'page-down'})
                     break
                 case 'up':
-                    state.moveViewUp()
+                    store.dispatch({type:'page-up'})
                     break
             }
         }
