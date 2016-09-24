@@ -118,24 +118,25 @@ connection.on('ready', launchpad => {
 
     function renderLeds() {
         const state = store.getState()
-        let canvas = util.emptyGrid(8, 8, '0')
+        const canvas = util.emptyGrid(8, 8, '0')
         const [offsetX, offsetY] = state.getOffsets()
         const step = state.step - offsetX
         const page = state.stepGrid.slice(offsetX, offsetX + 8)
             .map(column => column.slice(offsetY, offsetY + 8))
         // g = green, r = red, o = orange, y = yellow, 0 = off
-        //draw an end of sequence marker if sequence ends within space
+        // draw an end of sequence marker if sequence ends within page
         if (page.length < 8) {
-            canvas = canvas.map(row => {
+            canvas.forEach(row => {
                 row[page.length] = 'r'
-                return row
             })
         }
+        //draw all the squares
         canvas.forEach((row, y) => {
             page.forEach((values, x) => {
                 row[x] = values[y] ? 'g' : '0'
             })
         })
+        //draw the cursor
         canvas.forEach((row, y) => {
             row[step] = page[step][y] ? 'o' : 'y'
         })
