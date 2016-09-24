@@ -76,16 +76,18 @@ module.exports = function (options) {
             }
             case 'increment-steps': {
                 const n = action.value
-                state.stepGrid = state.stepGrid.concat(
-                    util.emptyGrid(n, state.noteRows.length, false))
-                state.numberOfSteps += n
+                const numberOfSteps = state.numberOfSteps + n
+                if (state.stepGrid.length < numberOfSteps) {
+                    state.stepGrid = state.stepGrid.concat(
+                        util.emptyGrid(numberOfSteps - state.stepGrid.length, state.noteRows.length, false))
+                }
+                state.numberOfSteps = numberOfSteps
                 return state
             }
             case 'decrement-steps': {
                 const n = action.value
                 let numberOfSteps = state.numberOfSteps - n
                 if (numberOfSteps >= 1) {
-                    state.stepGrid = state.stepGrid.slice(0, numberOfSteps)
                     state.numberOfSteps = numberOfSteps
                     state.step = Math.min(numberOfSteps - 1, state.step)
                 }
