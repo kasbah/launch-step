@@ -124,9 +124,10 @@ connection.on('ready', launchpad => {
         const page = state.stepGrid.slice(offsetX, offsetX + 8)
             .map(column => column.slice(offsetY, offsetY + 8))
         // g = green, r = red, o = orange, y = yellow, 0 = off
+        //draw an end of sequence marker if sequence ends within space
         if (page.length < 8) {
             canvas = canvas.map(row => {
-                row[page.length] = 'o'
+                row[page.length] = 'r'
                 return row
             })
         }
@@ -136,7 +137,7 @@ connection.on('ready', launchpad => {
             })
         })
         canvas.forEach((row, y) => {
-            row[step] = page[step][y] ? 'r' : 'y'
+            row[step] = page[step][y] ? 'o' : 'y'
         })
         //set the LEDs on the cursor keys according to page level
         const level = state.row / 8
