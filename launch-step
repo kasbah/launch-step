@@ -8,6 +8,8 @@ const tonalMidi     = require('tonal-midi')
 const tonalRange    = require('tonal-range')
 const {noteOn, noteOff} = require('midi-help')
 
+const {red, green, yellow, orange, off} = midiLaunchpad.colors
+
 const util = require('./util')
 const scales = require('./scales')
 
@@ -118,43 +120,42 @@ connection.on('ready', launchpad => {
 
     function renderLeds() {
         const state = store.getState()
-        const canvas = util.emptyGrid(8, 8, '0')
+        const canvas = util.emptyGrid(8, 8, off)
         const [offsetX, offsetY] = state.getOffsets()
         const step = state.step - offsetX
         const page = state.stepGrid.slice(offsetX, offsetX + 8)
             .map(column => column.slice(offsetY, offsetY + 8))
-        // g = green, r = red, o = orange, y = yellow, 0 = off
         // draw an end of sequence marker if sequence ends within page
         if (page.length < 8) {
             canvas.forEach(row => {
-                row[page.length] = 'r'
+                row[page.length] = red.high
             })
         }
         //draw all the squares
         canvas.forEach((row, y) => {
             page.forEach((values, x) => {
-                row[x] = values[y] ? 'g' : '0'
+                row[x] = values[y] ? green.high : off
             })
         })
         //draw the cursor
         canvas.forEach((row, y) => {
-            row[step] = page[step][y] ? 'o' : 'y'
+            row[step] = page[step][y] ? orange.high : yellow.high
         })
         //set the LEDs on the cursor keys according to page level
         const level = state.row / 8
         if (level !== 0) {
-            const c = ['g', 'y', 'o', 'r', 'r'][Math.abs(level) - 1]
+            const c = [green.high, yellow.high, orange.high, red.high, red.high][Math.abs(level) - 1]
             if (Math.abs(level) > 4) {
                 canvas.push([c, c])
             } else if (level < 0) {
-                canvas.push([c, '0'])
+                canvas.push([c, off])
             } else {
-                canvas.push(['0', c])
+                canvas.push([off, c])
             }
         } else {
-            canvas.push(['0', '0'])
+            canvas.push([off, off])
         }
-        launchpad.renderBytes(canvas.map(a => a.join('')))
+        launchpad.renderColors(canvas)
     }
 
     function renderMidi() {

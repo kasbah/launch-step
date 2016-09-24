@@ -13,7 +13,7 @@
     "lodash.kebabcase": "^4.1.1",
     "midi": "^0.9.5",
     "midi-help": "^0.2.1",
-    "midi-launchpad": "github:granjow/node-midi-launchpad#ce3222cb611712f9df253baf76cbc194ffd834d9",
+    "midi-launchpad": "github:kasbah/node-midi-launchpadt#7f7fedc1022f3e709b27dff2207f2705dffac566",
     "redux": "^3.6.0",
     "step-sequencer": "github:kasbah/step-sequencert#54e052648ae2bec8ab5f4bfd1d578ea41c8fc932",
     "tonal-midi": "^0.50.7",
