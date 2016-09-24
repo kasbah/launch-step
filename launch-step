@@ -110,7 +110,7 @@ connection.on('ready', launchpad => {
         state.playing.forEach((playing, y) => {
             if (playing) {
                 const note = state.noteRows[y]
-                midiOutput.sendMessage(noteOff(note, state.velocityRows[y]))
+                midiOutput.sendMessage(noteOff(note, 0))
                 store.dispatch({type: 'set-off', y})
             }
         })
@@ -143,11 +143,6 @@ connection.on('ready', launchpad => {
         canvas.forEach((row, y) => {
             row[step] = page[step][y] ? orange.high : yellow.high
         })
-        canvas.forEach((row, y) => {
-            const velocity = state.velocityRows[y]
-            const color = [off, green.high, yellow.high, orange.high, red.high][Math.round(velocity/127) * 4]
-            row.push(color)
-        })
         //set the LEDs on the cursor keys according to page level
         const level = state.row / 8
         if (level !== 0) {
@@ -167,12 +162,12 @@ connection.on('ready', launchpad => {
 
     function renderMidi() {
         const state = store.getState()
-        state.stepGrid[state.step].forEach((down, y) => {
-            if (down) {
+        state.stepGrid[state.step].forEach((velocity, y) => {
+            if (velocity) {
                 const note = state.noteRows[y]
-                midiOutput.sendMessage(noteOn(note, state.velocityRows[y]))
+                midiOutput.sendMessage(noteOn(note, velocity))
                 setTimeout(() => {
-                    midiOutput.sendMessage(noteOff(note, state.velocityRows[y]))
+                    midiOutput.sendMessage(noteOff(note, velocity))
                     store.dispatch({type: 'set-off', value:y})
                 }, state.duration)
                 store.dispatch({type: 'set-playing', value:y})

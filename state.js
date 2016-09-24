@@ -11,7 +11,7 @@ module.exports = function (options) {
         return {
             noteRows      : noteRows,
             playing       : noteRows.map(() => false),
-            velocityRows  : noteRows.map(() => 127),
+            velocityBrush : 127,
             stepGrid      : stepGrid,
             step          : 0,
             numberOfSteps : options.numberOfSteps,
@@ -36,7 +36,11 @@ module.exports = function (options) {
             case 'toggle-button':
                 const x = action.value[0]
                 const y = action.value[1]
-                state.stepGrid[x][y] = !state.stepGrid[x][y]
+                if (state.stepGrid[x][y]) {
+                    state.stepGrid[x][y] = 0
+                } else {
+                    state.stepGrid[x][y] = state.velocityBrush
+                }
                 return state
             case 'set-playing': {
                 const y = action.value
@@ -80,7 +84,7 @@ module.exports = function (options) {
                 const numberOfSteps = state.numberOfSteps + n
                 if (state.stepGrid.length < numberOfSteps) {
                     state.stepGrid = state.stepGrid.concat(
-                        util.emptyGrid(8, state.noteRows.length, false))
+                        util.emptyGrid(8, state.noteRows.length, 0))
                     state.stepsInGrid += 8
                 }
                 state.numberOfSteps = numberOfSteps
@@ -99,7 +103,7 @@ module.exports = function (options) {
     }
 
     function emptyStepGrid(numberOfSteps, rows) {
-        return util.emptyGrid(numberOfSteps, rows, false)
+        return util.emptyGrid(numberOfSteps, rows, 0)
     }
 
 
