@@ -134,8 +134,8 @@ connection.on('ready', launchpad => {
         // draw an end of sequence marker if sequence ends within page
         const endIndex = state.numberOfSteps - offsetX
         if (endIndex < 8) {
-            canvas.forEach(row => {
-                row[endIndex] = red.high
+            canvas.forEach((row, y) => {
+                row[endIndex] = page[endIndex][y] ? orange.high : red.high
             })
         }
         //draw the cursor
