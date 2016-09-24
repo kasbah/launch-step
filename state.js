@@ -15,6 +15,7 @@ module.exports = function (options) {
             playing       : playing,
             step          : 0,
             numberOfSteps : options.numberOfSteps,
+            stepsInGrid   : options.numberOfSteps,
             row           : 0,
             duration      : 400, //ms
             tempo         : options.tempo === 'ext' ? 0 : options.tempo,
@@ -56,7 +57,7 @@ module.exports = function (options) {
                 state.tempo = action.value
                 return state
             case 'clear-grid':
-                state.stepGrid = emptyStepGrid(state.numberOfSteps, state.noteRows.length)
+                state.stepGrid = emptyStepGrid(state.stepsInGrid, state.noteRows.length)
                 return state
             case 'page-up': {
                 const row = state.row - 8
@@ -79,7 +80,8 @@ module.exports = function (options) {
                 const numberOfSteps = state.numberOfSteps + n
                 if (state.stepGrid.length < numberOfSteps) {
                     state.stepGrid = state.stepGrid.concat(
-                        util.emptyGrid(numberOfSteps - state.stepGrid.length, state.noteRows.length, false))
+                        util.emptyGrid(8, state.noteRows.length, false))
+                    state.stepsInGrid += 8
                 }
                 state.numberOfSteps = numberOfSteps
                 return state

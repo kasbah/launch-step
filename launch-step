@@ -125,17 +125,18 @@ connection.on('ready', launchpad => {
         const step = state.step - offsetX
         const page = state.stepGrid.slice(offsetX, offsetX + 8)
             .map(column => column.slice(offsetY, offsetY + 8))
+        const endIndex = state.numberOfSteps - offsetX
         //draw all the squares
         canvas.forEach((row, y) => {
             page.forEach((values, x) => {
-                row[x] = values[y] ? green.high : off
+                const color = x < endIndex ? green.high : green.low
+                row[x] = values[y] ? color : off
             })
         })
         // draw an end of sequence marker if sequence ends within page
-        const endIndex = state.numberOfSteps - offsetX
         if (endIndex < 8) {
             canvas.forEach((row, y) => {
-                row[endIndex] = page[endIndex][y] ? orange.high : red.high
+                row[endIndex] = page[endIndex][y] ? yellow.medium : red.medium
             })
         }
         //draw the cursor
