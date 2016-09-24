@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 'use strict'
+require("babel-polyfill")
 const midi          = require('midi')
 const midiLaunchpad = require('midi-launchpad')
 const argv          = require('argv')

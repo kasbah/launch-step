@@ -4,23 +4,31 @@
   "description": "Midi step sequencer for the Novation Launchpad",
   "main": "launch-step",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel --presets es2015-script --plugins array-includes src -d lib"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "argv": "github:kasbah/argv#c0f809030fffeb39375a3a804e612975f68680c8",
+    "babel-polyfill": "^6.13.0",
     "lodash.kebabcase": "^4.1.1",
     "midi": "^0.9.5",
     "midi-help": "^0.2.1",
-    "midi-launchpad": "github:kasbah/node-midi-launchpadt#7f7fedc1022f3e709b27dff2207f2705dffac566",
+    "midi-launchpad": "kasbah/node-midi-launchpad#92eecf4fce048a58ba9336eadae50261749005cc",
     "redux": "^3.6.0",
-    "step-sequencer": "github:kasbah/step-sequencert#54e052648ae2bec8ab5f4bfd1d578ea41c8fc932",
+    "step-sequencer": "github:kasbah/step-sequencer#54e052648ae2bec8ab5f4bfd1d578ea41c8fc932",
     "tonal-midi": "^0.50.7",
     "tonal-range": "^0.51.1",
     "tonal-scale": "^0.50.0"
   },
   "bin": {
-    "launch-step": "launch-step"
+    "launch-step": "lib/index.js"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.14.0",
+    "babel-preset-es2015-script": "^1.1.0",
+    "babel-plugin-array-includes": "^2.0.3"
   }
 }
+
