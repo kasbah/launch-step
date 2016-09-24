@@ -8,11 +8,11 @@ module.exports = function (options) {
     function initState() {
         const noteRows = scales.getAllNotes(options.scale, options.root)
         const stepGrid = emptyStepGrid(options.numberOfSteps, noteRows.length)
-        const playing  = noteRows.map(() => false)
         return {
             noteRows      : noteRows,
+            playing       : noteRows.map(() => false),
+            velocityRows  : noteRows.map(() => 127),
             stepGrid      : stepGrid,
-            playing       : playing,
             step          : 0,
             numberOfSteps : options.numberOfSteps,
             stepsInGrid   : options.numberOfSteps,
