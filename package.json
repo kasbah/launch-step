@@ -8,7 +8,7 @@
     "build": "babel --presets es2015-script --plugins array-includes src -d lib"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "argv": "github:kasbah/argv#c0f809030fffeb39375a3a804e612975f68680c8",
     "babel-polyfill": "^6.13.0",
