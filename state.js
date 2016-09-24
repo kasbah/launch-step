@@ -11,7 +11,7 @@ module.exports = function (options) {
         return {
             noteRows      : noteRows,
             playing       : noteRows.map(() => false),
-            velocityBrush : 80,
+            velocityBrush : 127,
             stepGrid      : stepGrid,
             step          : 0,
             numberOfSteps : options.numberOfSteps,
@@ -36,7 +36,7 @@ module.exports = function (options) {
             case 'toggle-button':
                 const x = action.value[0]
                 const y = action.value[1]
-                if (state.stepGrid[x][y]) {
+                if (state.stepGrid[x][y] == state.velocityBrush) {
                     state.stepGrid[x][y] = 0
                 } else {
                     state.stepGrid[x][y] = state.velocityBrush
@@ -97,6 +97,16 @@ module.exports = function (options) {
                     state.numberOfSteps = numberOfSteps
                     state.step = Math.min(numberOfSteps - 1, state.step)
                 }
+                return state
+            }
+            case 'change-velocity-brush': {
+                const values = [20, 80, 127]
+                const current = values.indexOf(state.velocityBrush)
+                let next = current + 1
+                if (next >= values.length) {
+                    next = 0
+                }
+                state.velocityBrush = values[next]
                 return state
             }
         }

@@ -146,19 +146,23 @@ connection.on('ready', launchpad => {
             row[step] = page[step][y] ? orange.high : yellow.high
         })
         //set the LEDs on the cursor keys according to page level
+        const topRow = Array(8).fill(off)
         const level = state.row / 8
         if (level !== 0) {
             const c = [green.high, yellow.high, orange.high, red.high, red.high][Math.abs(level) - 1]
             if (Math.abs(level) > 4) {
-                canvas.push([c, c])
+                topRow[0] = c
+                topRow[1] = c
             } else if (level < 0) {
-                canvas.push([c, off])
+                topRow[0] = c
             } else {
-                canvas.push([off, c])
+                topRow[1] = c
             }
-        } else {
-            canvas.push([off, off])
         }
+        //draw velocity brush satus
+        const c = [green.low, green.medium, green.high][Math.round((state.velocityBrush/127 * 2))]
+        topRow[7] = c
+        canvas.push(topRow)
         launchpad.renderColors(canvas)
     }
 
@@ -206,6 +210,9 @@ connection.on('ready', launchpad => {
         } else {
             switch(button.special[0]) {
                 case 'mixer':
+                    store.dispatch({type:'change-velocity-brush'})
+                    break
+                case 'session':
                     store.dispatch({type:'clear-grid'})
                     break
                 case 'down':
