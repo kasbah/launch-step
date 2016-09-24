@@ -48,7 +48,9 @@ module.exports = function (options) {
                 return state
             }
             case 'set-step':
-                state.step = action.value
+                if (state.step < state.numberOfSteps) {
+                    state.step = action.value
+                }
                 return state
             case 'set-tempo':
                 state.tempo = action.value
@@ -77,6 +79,16 @@ module.exports = function (options) {
                 state.stepGrid = state.stepGrid.concat(
                     util.emptyGrid(n, state.noteRows.length, false))
                 state.numberOfSteps += n
+                return state
+            }
+            case 'decrement-steps': {
+                const n = action.value
+                let numberOfSteps = state.numberOfSteps - n
+                if (numberOfSteps >= 1) {
+                    state.stepGrid = state.stepGrid.slice(0, numberOfSteps)
+                    state.numberOfSteps = numberOfSteps
+                    state.step = Math.min(numberOfSteps - 1, state.step)
+                }
                 return state
             }
         }

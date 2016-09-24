@@ -155,7 +155,6 @@ connection.on('ready', launchpad => {
             canvas.push(['0', '0'])
         }
         launchpad.renderBytes(canvas.map(a => a.join('')))
-        renderSequencer()
     }
 
     function renderMidi() {
@@ -174,10 +173,10 @@ connection.on('ready', launchpad => {
     }
 
     function renderSequencer() {
+        stepSequencer.removeAllListeners()
         const state = store.getState()
         stepSequencer.setTempo(state.tempo * options.stepsPerBeat)
         stepSequencer.setSequence(state.numberOfSteps, [])
-        stepSequencer.removeAllListeners()
         registerSequence(state.numberOfSteps)
     }
 
@@ -212,8 +211,13 @@ connection.on('ready', launchpad => {
                 case 'up':
                     store.dispatch({type:'page-up'})
                     break
+                case 'left':
+                    store.dispatch({type:'decrement-steps', value: 1})
+                    renderSequencer()
+                    break
                 case 'right':
                     store.dispatch({type:'increment-steps', value: 1})
+                    renderSequencer()
                     break
             }
         }
