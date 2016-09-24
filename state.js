@@ -10,13 +10,14 @@ module.exports = function (options) {
         const stepGrid = emptyStepGrid(noteRows.length)
         const playing  = noteRows.map(() => false)
         return {
-            noteRows : noteRows,
-            stepGrid : stepGrid,
-            playing  : playing,
-            step     : 0,
-            row      : 0,
-            duration : 400, //ms
-            tempo    : options.tempo === 'ext' ? 0 : options.tempo,
+            noteRows      : noteRows,
+            stepGrid      : stepGrid,
+            playing       : playing,
+            step          : 0,
+            numberOfSteps : options.numberOfSteps,
+            row           : 0,
+            duration      : 400, //ms
+            tempo         : options.tempo === 'ext' ? 0 : options.tempo,
             getOffsets: function() {
                 return [
                     Math.floor(this.step / 8) * 8,

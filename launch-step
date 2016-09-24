@@ -179,10 +179,11 @@ connection.on('ready', launchpad => {
             const [offsetX, offsetY] = state.getOffsets()
             const x = button.x + offsetX
             const y = button.y + offsetY
-            if (x < options.numberOfSteps && y < state.noteRows.length) {
+            if (x < state.numberOfSteps && y < state.noteRows.length) {
                 store.dispatch({type:'toggle-button', value: [x,y]})
             }
         } else {
+            console.log(button.special[0])
             switch(button.special[0]) {
                 case 'mixer':
                     store.dispatch({type:'clear-grid'})
