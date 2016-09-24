@@ -1,12 +1,6 @@
 'use strict'
-
-function emptyVector(i, defaultValue) {
-    return Array(i).fill(defaultValue)
-}
-
 function emptyGrid(i, j, defaultValue) {
-    return emptyVector(i).map(emptyVector)
+    return Array(i).fill().map(() => Array(j).fill(defaultValue))
 }
 
 exports.emptyGrid = emptyGrid
-exports.emptyVector = emptyVector

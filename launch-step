@@ -118,12 +118,18 @@ connection.on('ready', launchpad => {
 
     function renderLeds() {
         const state = store.getState()
-        const canvas = util.emptyGrid(8, 8, '0')
+        let canvas = util.emptyGrid(8, 8, '0')
         const [offsetX, offsetY] = state.getOffsets()
         const step = state.step - offsetX
         const page = state.stepGrid.slice(offsetX, offsetX + 8)
             .map(column => column.slice(offsetY, offsetY + 8))
         // g = green, r = red, o = orange, y = yellow, 0 = off
+        if (page.length < 8) {
+            canvas = canvas.map(row => {
+                row[page.length] = 'o'
+                return row
+            })
+        }
         canvas.forEach((row, y) => {
             page.forEach((values, x) => {
                 row[x] = values[y] ? 'g' : '0'
