@@ -147,6 +147,7 @@ connection.on('ready', launchpad => {
             canvas.push(['0', '0'])
         }
         launchpad.renderBytes(canvas.map(a => a.join('')))
+        renderSequencer()
     }
 
     function renderMidi() {
@@ -162,16 +163,26 @@ connection.on('ready', launchpad => {
                 store.dispatch({type: 'set-playing', value:y})
             }
         })
-        stepSequencer.setTempo(state.tempo * options.stepsPerBeat)
     }
 
-    for (let step = 0; step < options.numberOfSteps; step++) {
-        stepSequencer.on(step, () => {
-            store.dispatch({type: 'set-step', value: step})
-            renderMidi()
-            renderLeds()
-        })
+    function renderSequencer() {
+        const state = store.getState()
+        stepSequencer.setTempo(state.tempo * options.stepsPerBeat)
+        stepSequencer.setSequence(state.numberOfSteps, [])
+        stepSequencer.removeAllListeners()
+        registerSequence(state.numberOfSteps)
     }
+
+    function registerSequence(numberOfSteps) {
+        for (let step = 0; step < numberOfSteps; step++) {
+            stepSequencer.on(step, () => {
+                store.dispatch({type: 'set-step', value: step})
+                renderMidi()
+                renderLeds()
+            })
+        }
+    }
+    registerSequence(options.numberOfSteps)
 
     launchpad.on('press', button => {
         if(!button.special) {
@@ -183,7 +194,6 @@ connection.on('ready', launchpad => {
                 store.dispatch({type:'toggle-button', value: [x,y]})
             }
         } else {
-            console.log(button.special[0])
             switch(button.special[0]) {
                 case 'mixer':
                     store.dispatch({type:'clear-grid'})
@@ -193,6 +203,9 @@ connection.on('ready', launchpad => {
                     break
                 case 'up':
                     store.dispatch({type:'page-up'})
+                    break
+                case 'right':
+                    store.dispatch({type:'increment-steps', value: 1})
                     break
             }
         }

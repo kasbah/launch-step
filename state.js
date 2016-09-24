@@ -7,7 +7,7 @@ const util   = require('./util')
 module.exports = function (options) {
     function initState() {
         const noteRows = scales.getAllNotes(options.scale, options.root)
-        const stepGrid = emptyStepGrid(noteRows.length)
+        const stepGrid = emptyStepGrid(options.numberOfSteps, noteRows.length)
         const playing  = noteRows.map(() => false)
         return {
             noteRows      : noteRows,
@@ -54,7 +54,7 @@ module.exports = function (options) {
                 state.tempo = action.value
                 return state
             case 'clear-grid':
-                state.stepGrid = emptyStepGrid(state.noteRows.length)
+                state.stepGrid = emptyStepGrid(state.numberOfSteps, state.noteRows.length)
                 return state
             case 'page-up': {
                 const row = state.row - 8
@@ -72,11 +72,18 @@ module.exports = function (options) {
                 state.row = row
                 return state
             }
+            case 'increment-steps': {
+                const n = action.value
+                state.stepGrid = state.stepGrid.concat(
+                    util.emptyGrid(n, state.noteRows.length, false))
+                state.numberOfSteps += n
+                return state
+            }
         }
     }
 
-    function emptyStepGrid(rows) {
-        return util.emptyGrid(options.numberOfSteps, rows, false)
+    function emptyStepGrid(numberOfSteps, rows) {
+        return util.emptyGrid(numberOfSteps, rows, false)
     }
 
 
