@@ -11,7 +11,7 @@ module.exports = function (options) {
         return {
             noteRows      : noteRows,
             playing       : noteRows.map(() => false),
-            velocityBrush : 127,
+            velocityBrush : 80,
             stepGrid      : stepGrid,
             step          : 0,
             numberOfSteps : options.numberOfSteps,

@@ -129,8 +129,10 @@ connection.on('ready', launchpad => {
         //draw all the squares
         canvas.forEach((row, y) => {
             page.forEach((values, x) => {
-                const color = x < endIndex ? green.high : green.low
-                row[x] = values[y] ? color : off
+                const velocity = values[y]
+                const level = ['low', 'medium', 'high'][Math.round((velocity/127) * 2)]
+                const color = x < endIndex ? green : red
+                row[x] = values[y] ? color[level] : off
             })
         })
         // draw an end of sequence marker if sequence ends within page
