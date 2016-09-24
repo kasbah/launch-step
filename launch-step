@@ -143,6 +143,11 @@ connection.on('ready', launchpad => {
         canvas.forEach((row, y) => {
             row[step] = page[step][y] ? orange.high : yellow.high
         })
+        canvas.forEach((row, y) => {
+            const velocity = state.velocityRows[y]
+            const color = [off, green.high, yellow.high, orange.high, red.high][Math.round(velocity/127) * 4]
+            row.push(color)
+        })
         //set the LEDs on the cursor keys according to page level
         const level = state.row / 8
         if (level !== 0) {
