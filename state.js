@@ -75,7 +75,7 @@ module.exports = function (options) {
     }
 
     function emptyStepGrid(rows) {
-        return util.emptyGrid(options.steps, rows, false)
+        return util.emptyGrid(options.numberOfSteps, rows, false)
     }
 
 

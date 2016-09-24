@@ -50,11 +50,11 @@ const args = argv.option([
 ]).run()
 
 const options = {
-    tempo        : args.options.tempo === 'ext' ? 'ext' : Number(args.options.tempo || 120),
-    steps        : args.options['number-of-steps'] || 8,
-    stepsPerBeat : args.options['steps-per-beat'] || 2,
-    scale        : args.options.scale || 'major-pentatonic',
-    root         : tonalMidi.toMidi(args.options['root-note'] || 60),
+    tempo         : args.options.tempo === 'ext' ? 'ext' : Number(args.options.tempo || 120),
+    numberOfSteps : args.options['number-of-steps'] || 8,
+    stepsPerBeat  : args.options['steps-per-beat'] || 2,
+    scale         : args.options.scale || 'major-pentatonic',
+    root          : tonalMidi.toMidi(args.options['root-note'] || 60),
 }
 
 if (isNaN(options.root) || options.root == null) {
@@ -65,7 +65,7 @@ if (!(scales.supportedScales.includes(options.scale))) {
     console.error(`No scale named '${options.scale}', run 'launch-step --help'for a list of available scales.`)
     process.exit(1)
 }
-console.log(`Starting ${options.steps} step sequencer at ${options.tempo} bpm, ${options.stepsPerBeat} steps per beat, using ${options.scale} scale starting with MIDI note ${options.root} (${tonalMidi.fromMidi(options.root)}).`)
+console.log(`Starting ${options.numberOfSteps} step sequencer at ${options.tempo} bpm, ${options.stepsPerBeat} steps per beat, using ${options.scale} scale starting with MIDI note ${options.root} (${tonalMidi.fromMidi(options.root)}).`)
 
 
 const store = require('./state')(options)
@@ -95,7 +95,7 @@ if (options.tempo === 'ext') {
 }
 
 
-const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.steps)
+const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.numberOfSteps)
 
 //undefined = auto-connect, false = disable animation
 const connection = midiLaunchpad.connect(undefined, false)
@@ -165,7 +165,7 @@ connection.on('ready', launchpad => {
         stepSequencer.setTempo(state.tempo * options.stepsPerBeat)
     }
 
-    for (let step = 0; step < options.steps; step++) {
+    for (let step = 0; step < options.numberOfSteps; step++) {
         stepSequencer.on(step, () => {
             store.dispatch({type: 'set-step', value: step})
             renderMidi()
@@ -179,7 +179,7 @@ connection.on('ready', launchpad => {
             const [offsetX, offsetY] = state.getOffsets()
             const x = button.x + offsetX
             const y = button.y + offsetY
-            if (x < options.steps && y < state.noteRows.length) {
+            if (x < options.numberOfSteps && y < state.noteRows.length) {
                 store.dispatch({type:'toggle-button', value: [x,y]})
             }
         } else {
