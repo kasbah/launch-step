@@ -1,3 +1,4 @@
+'use strict'
 const kebabCase  = require('lodash.kebabcase')
 const tonalMidi  = require('tonal-midi')
 const tonalScale = require('tonal-scale')

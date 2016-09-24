@@ -115,6 +115,7 @@ connection.on('ready', launchpad => {
         launchpad.clear()
         process.exit()
     })
+
     function renderLeds() {
         const state = store.getState()
         const canvas = util.emptyGrid(8, 8, '0')
@@ -147,6 +148,7 @@ connection.on('ready', launchpad => {
         }
         launchpad.renderBytes(canvas.map(a => a.join('')))
     }
+
     function renderMidi() {
         const state = store.getState()
         state.stepGrid[state.step].forEach((down, y) => {

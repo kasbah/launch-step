@@ -1,3 +1,4 @@
+'use strict'
 const redux = require('redux')
 
 const scales = require('./scales')
@@ -84,4 +85,3 @@ module.exports = function (options) {
 
     return redux.createStore(reducer)
 }
-
