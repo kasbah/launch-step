@@ -162,7 +162,9 @@ connection.on('ready', launchpad => {
         }
         //draw velocity brush satus
         const c = [green.low, green.medium, green.high][Math.round((state.velocityBrush/127 * 2))]
-        topRow[7] = c
+        topRow[5] = c
+        //session button red
+        topRow[4] = red.high
         canvas.push(topRow)
         launchpad.renderColors(canvas)
     }
@@ -210,7 +212,7 @@ connection.on('ready', launchpad => {
             store.dispatch({type:'toggle-button', value: [x,y]})
         } else {
             switch(button.special[0]) {
-                case 'mixer':
+                case 'user 1':
                     store.dispatch({type:'change-velocity-brush'})
                     break
                 case 'session':
