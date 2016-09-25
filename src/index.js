@@ -214,7 +214,8 @@ connection.on('ready', launchpad => {
                     store.dispatch({type:'change-velocity-brush'})
                     break
                 case 'session':
-                    store.dispatch({type:'clear-grid'})
+                    store.dispatch({type:'reset'})
+                    renderSequencer()
                     break
                 case 'down':
                     store.dispatch({type:'page-down'})

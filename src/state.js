@@ -33,6 +33,8 @@ module.exports = function (options) {
             state = initState()
         }
         switch(action.type) {
+            case 'reset':
+                return initState()
             case 'toggle-button':
                 const x = action.value[0]
                 const y = action.value[1]
