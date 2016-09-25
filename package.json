@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "babel --presets es2015-script --plugins array-includes src -d lib"
   },
-  "author": "",
+  "pre-commit": "build",
+  "author": "Kaspar Emanuel",
+  "repository": "https://github.com/kasbah/launch-step",
   "license": "MIT",
   "dependencies": {
     "argv": "github:kasbah/argv#c0f809030fffeb39375a3a804e612975f68680c8",
@@ -27,8 +29,8 @@
   },
   "devDependencies": {
     "babel-cli": "^6.14.0",
+    "babel-plugin-array-includes": "^2.0.3",
     "babel-preset-es2015-script": "^1.1.0",
-    "babel-plugin-array-includes": "^2.0.3"
+    "pre-commit": "^1.1.3"
   }
 }
-
