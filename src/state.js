@@ -7,7 +7,9 @@ const util   = require('./util')
 module.exports = function (options) {
     function initState() {
         const noteRows = scales.getAllNotes(options.scale, options.root)
-        const stepGrid = emptyStepGrid(options.numberOfSteps, noteRows.length)
+        //align to columns in a page (8)
+        const stepsInGrid = options.numberOfSteps + 8 - (options.numberOfSteps % 8)
+        const stepGrid = emptyStepGrid(stepsInGrid, noteRows.length)
         return {
             noteRows      : noteRows,
             playing       : noteRows.map(() => false),
@@ -15,7 +17,7 @@ module.exports = function (options) {
             stepGrid      : stepGrid,
             step          : 0,
             numberOfSteps : options.numberOfSteps,
-            stepsInGrid   : options.numberOfSteps,
+            stepsInGrid   : stepsInGrid,
             row           : 0,
             duration      : 400, //ms
             tempo         : options.tempo === 'ext' ? 0 : options.tempo,
