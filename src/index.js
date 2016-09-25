@@ -3,7 +3,7 @@
 require("babel-polyfill")
 const midi          = require('midi')
 const midiLaunchpad = require('midi-launchpad')
-const argv          = require('argv')
+const argv          = require('argv-me')
 const StepSequencer = require('step-sequencer')
 const tonalMidi     = require('tonal-midi')
 const tonalRange    = require('tonal-range')

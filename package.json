@@ -12,7 +12,7 @@
   "repository": "https://github.com/kasbah/launch-step",
   "license": "MIT",
   "dependencies": {
-    "argv": "github:kasbah/argv#c0f809030fffeb39375a3a804e612975f68680c8",
+    "argv-me": "github:kasbah/argv-me#112ea2a06331c059dbd07da7fa27986e45214bfa",
     "babel-polyfill": "^6.13.0",
     "lodash.kebabcase": "^4.1.1",
     "midi": "^0.9.5",
