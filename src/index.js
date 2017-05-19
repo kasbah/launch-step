@@ -204,7 +204,8 @@ connection.on('ready', launchpad => {
         let step = 0
         midiInput.on('message', (deltaTime, message) => {
             count += 1
-            if (count > 7) {
+            //beat clock is 24 per quarter i.e. per beat
+            if (count >= (24 / options.stepsPerBeat)) {
                 count = 0
                 const state = store.getState()
                 step += 1;
