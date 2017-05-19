@@ -14,40 +14,23 @@ const scales = require('./scales')
 
 const options = require('./options')
 const store = require('./state')(options)
+store.dispatch({type:'reset'})
 
 const midiOutput = new midi.output()
 midiOutput.openVirtualPort('launch-step output')
 
-if (options.tempo === 'ext') {
-    const midiInput = new midi.input()
-    //don't ignore midi clock messages
-    midiInput.ignoreTypes(true, false, true)
-    midiInput.openVirtualPort('launch-step clock input')
-    const deltas = []
-    midiInput.on('message', (deltaTime, message)=> {
-        if (deltaTime > 0.00000) {
-            deltas.push(deltaTime)
-        }
-
-        const total = deltas.reduce((a, b) => a + b, 0)
-        const bpm   = Math.round((600 / 24) / (total / deltas.length)) / 10
-        store.dispatch({type: 'set-tempo', value: bpm})
-
-        if (deltas.length >= 96) {
-            deltas.shift()
-        }
-    })
+if (options.tempo !== 'ext') {
+    var stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.numberOfSteps)
 }
-
-
-const stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.numberOfSteps)
 
 //undefined = auto-connect, false = disable animation
 const connection = midiLaunchpad.connect(undefined, false)
 
 connection.on('ready', launchpad => {
     process.on('SIGINT', () => {
-        stepSequencer.stop()
+        if (options.tempo !== 'ext') {
+            stepSequencer.stop()
+        }
         const state = store.getState()
         //turn off any playing notes
         state.playing.forEach((playing, y) => {
@@ -127,20 +110,24 @@ connection.on('ready', launchpad => {
     }
 
     function renderSequencer() {
-        stepSequencer.removeAllListeners()
-        const state = store.getState()
-        stepSequencer.setTempo(state.tempo * options.stepsPerBeat)
-        stepSequencer.setSequence(state.numberOfSteps, [])
-        registerSequence(state.numberOfSteps)
+        if (options.tempo !== 'ext') {
+            stepSequencer.removeAllListeners()
+            const state = store.getState()
+            stepSequencer.setTempo(state.tempo * options.stepsPerBeat)
+            stepSequencer.setSequence(state.numberOfSteps, [])
+            registerSequence(state.numberOfSteps)
+        }
     }
 
     function registerSequence(numberOfSteps) {
-        for (let step = 0; step < numberOfSteps; step++) {
-            stepSequencer.on(step, () => {
-                store.dispatch({type: 'set-step', value: step})
-                renderMidi()
-                renderLeds()
-            })
+        if (options.tempo !== 'ext') {
+            for (let step = 0; step < numberOfSteps; step++) {
+                stepSequencer.on(step, () => {
+                    store.dispatch({type: 'set-step', value: step})
+                    renderMidi()
+                    renderLeds()
+                })
+            }
         }
     }
     registerSequence(options.numberOfSteps)
@@ -180,7 +167,32 @@ connection.on('ready', launchpad => {
         renderLeds()
     })
 
-    stepSequencer.play()
+    if (options.tempo !== 'ext') {
+        stepSequencer.play()
+    }
+
+    if (options.tempo === 'ext') {
+        const midiInput = new midi.input()
+        //don't ignore midi clock messages
+        midiInput.ignoreTypes(true, false, true)
+        midiInput.openVirtualPort('launch-step clock input')
+        let count = 0
+        let step = 0
+        midiInput.on('message', (deltaTime, message) => {
+            count += 1
+            if (count > 7) {
+                count = 0
+                const state = store.getState()
+                step += 1;
+                if (step >= state.numberOfSteps) {
+                    step -= state.numberOfSteps
+                }
+                store.dispatch({type: 'set-step', value: step})
+                renderMidi()
+                renderLeds()
+            }
+        })
+    }
 
 })
 

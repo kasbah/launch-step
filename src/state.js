@@ -21,7 +21,7 @@ module.exports = function (options) {
             row           : 0,
             duration      : 400, //ms
             tempo         : options.tempo === 'ext' ? 0 : options.tempo,
-            getOffsets: function() {
+            getOffsets() {
                 return [
                     Math.floor(this.step / 8) * 8,
                     rowToNoteRow(this.noteRows, Math.floor(this.row / 8) * 8)
