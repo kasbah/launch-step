@@ -48,7 +48,14 @@ connection.on('ready', launchpad => {
         canvas.forEach((row, y) => {
             page.forEach((values, x) => {
                 const velocity = values[y]
-                const level = ['low', 'medium', 'high'][Math.round((velocity/127) * 2)]
+                let level
+                if (velocity === 127) {
+                    level = 'high'
+                } else if (velocity >= 100) {
+                    level = 'medium'
+                } else {
+                    level = 'low'
+                }
                 const color = x < endIndex ? green : red
                 row[x] = values[y] ? color[level] : off
             })
@@ -109,10 +116,10 @@ connection.on('ready', launchpad => {
             const velocity           = state.stepGrid[x][y]
             if (velocity === 0) {
                 store.dispatch({type:'set-velocity', value: [x,y, 127]})
-                let initialTime = 200
+                let initialTime = 1
                 const t = setInterval(a => {
                     if (initialTime > 0) {
-                        initialTime -= 100
+                        initialTime -= 1
                     } else {
                         const state    = store.getState()
                         const velocity = state.stepGrid[x][y]
@@ -120,7 +127,7 @@ connection.on('ready', launchpad => {
                             store.dispatch({type:'set-velocity', value: [x, y, velocity - 10]})
                         }
                     }
-                }, 100)
+                }, 200)
                 store.dispatch({type:'set-button-timer', value: [x,y, t]})
             } else {
                 store.dispatch({type:'set-velocity', value: [x,y, 0]})
