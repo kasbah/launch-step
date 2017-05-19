@@ -37,8 +37,8 @@ const args = argv.option([
         name: 'scale',
         short: 's',
         type: 'string',
-        description: `The scale to apply to the rows. The default is 'major-pentatonic'. Options are: \n\n ${scales.supportedScales.join('\n')}`,
-        example: "'launch-step -s major' or 'launch-step --scale=major'"
+        description: `The scale to apply to the rows. The default is 'major-pentatonic'. You can specify a scale by name or use MIDI or Options are: \n\n ${scales.supportedScales.join('\n')}`,
+        example: `for example:\nlaunch-step -s major\nlaunch-step --scale=major\nlaunch-step -s "C Eb F F# G Bb"\nlaunch-step -s "49 53 58 61"`
     },
     {
         name: 'root-note',
@@ -58,16 +58,29 @@ const options = {
     root          : tonalMidi.toMidi(args.options['root-note'] || 60),
 }
 
+
+if (options.scale.trim().split(' ').length > 1) {
+    const notes = options.scale.trim().split(' ')
+    options.scale = notes.map(n => {
+        if (isNaN(parseInt(n))) {
+            return n
+        } else {
+            return tonalMidi.fromMidi(n)
+        }
+    })
+} else  {
+    if (!(scales.supportedScales.includes(options.scale))) {
+        console.error(`No scale named '${options.scale}', run 'launch-step --help'for a list of available scales.`)
+        process.exit(1)
+    }
+}
+
 if (isNaN(options.root) || options.root == null) {
     console.error(`Invalid root note '${args.options['root-note']}' given. Should be a MIDI note number like 64 or a note name like A3, C#3 or Eb2.`)
     process.exit(1)
 }
 if (typeof(options.channel) !== 'number' || options.channel < 1 || options.channel > 16) {
     console.error(`Invalid MIDI channel '${args.options.channel}' given. Should be a number between 1 and 16.`)
-    process.exit(1)
-}
-if (!(scales.supportedScales.includes(options.scale))) {
-    console.error(`No scale named '${options.scale}', run 'launch-step --help'for a list of available scales.`)
     process.exit(1)
 }
 console.log(`Starting ${options.numberOfSteps} step sequencer on channel ${options.channel} at ${options.tempo} bpm, ${options.stepsPerBeat} steps per beat, using ${options.scale} scale starting with MIDI note ${options.root} (${tonalMidi.fromMidi(options.root)}).`)

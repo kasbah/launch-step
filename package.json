@@ -21,7 +21,7 @@
     "redux": "^3.6.0",
     "tonal-midi": "^0.50.7",
     "tonal-range": "^0.51.1",
-    "tonal-scale": "^0.50.0"
+    "tonal-scale": "^0.69.6"
   },
   "bin": {
     "launch-step": "lib/index.js"
