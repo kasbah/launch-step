@@ -13,7 +13,6 @@ module.exports = function (options) {
         return {
             noteRows      : noteRows,
             playing       : noteRows.map(() => false),
-            velocityBrush : 127,
             stepGrid      : stepGrid,
             buttonTimerGrid    : emptyStepGrid(stepsInGrid, noteRows.length, null),
             step          : 0,
@@ -36,8 +35,9 @@ module.exports = function (options) {
             state = initState()
         }
         switch(action.type) {
-            case 'reset':
+            case 'reset': {
                 return initState()
+            }
             case 'set-velocity': {
                 const x = action.value[0]
                 const y = action.value[1]
@@ -49,16 +49,6 @@ module.exports = function (options) {
                 const y = action.value[1]
                 clearInterval(state.buttonTimerGrid[x][y])
                 state.buttonTimerGrid[x][y] = action.value[2]
-                return state
-            }
-            case 'toggle-button': {
-                const x = action.value[0]
-                const y = action.value[1]
-                if (state.stepGrid[x][y] == state.velocityBrush) {
-                    state.stepGrid[x][y] = 0
-                } else {
-                    state.stepGrid[x][y] = state.velocityBrush
-                }
                 return state
             }
             case 'set-playing': {
@@ -82,7 +72,8 @@ module.exports = function (options) {
                 return state
             }
             case 'clear-grid': {
-                state.stepGrid = emptyStepGrid(state.stepsInGrid, state.noteRows.length)
+                state.stepGrid =
+                    emptyStepGrid(state.stepsInGrid, state.noteRows.length)
                 return state
             }
             case 'page-up': {
@@ -119,16 +110,6 @@ module.exports = function (options) {
                     state.numberOfSteps = numberOfSteps
                     state.step = Math.min(numberOfSteps - 1, state.step)
                 }
-                return state
-            }
-            case 'change-velocity-brush': {
-                const values = [20, 80, 127]
-                const current = values.indexOf(state.velocityBrush)
-                let next = current + 1
-                if (next >= values.length) {
-                    next = 0
-                }
-                state.velocityBrush = values[next]
                 return state
             }
         }

@@ -85,9 +85,8 @@ connection.on('ready', launchpad => {
                 topRow[1] = c
             }
         }
-        //draw velocity brush satus
-        const c = [green.low, green.medium, green.high][Math.round((state.velocityBrush/127 * 2))]
-        topRow[5] = c
+        //user1 is green
+        topRow[5] = green.high
         //session button red
         topRow[4] = red.high
         canvas.push(topRow)
@@ -155,7 +154,6 @@ connection.on('ready', launchpad => {
         } else {
             switch(button.special[0]) {
                 case 'user 1':
-                    store.dispatch({type:'change-velocity-brush'})
                     break
                 case 'session':
                     store.dispatch({type:'reset'})
