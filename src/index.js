@@ -138,7 +138,20 @@ connection.on('ready', launchpad => {
             const [offsetX, offsetY] = state.getOffsets()
             const x = button.x + offsetX
             const y = button.y + offsetY
-            store.dispatch({type:'toggle-button', value: [x,y]})
+            const velocity = state.stepGrid[x][y]
+            if (velocity === 0) {
+                store.dispatch({type:'set-velocity', value: [x,y, 127]})
+                const t = setInterval(a => {
+                    const state = store.getState()
+                    const velocity = state.stepGrid[x][y]
+                    if (velocity > 17) {
+                        store.dispatch({type:'set-velocity', value: [x,y, velocity - 10]})
+                    }
+                }, 100)
+                store.dispatch({type:'set-button-timer', value: [x,y, t]})
+            } else {
+                store.dispatch({type:'set-velocity', value: [x,y, 0]})
+            }
         } else {
             switch(button.special[0]) {
                 case 'user 1':
@@ -167,11 +180,19 @@ connection.on('ready', launchpad => {
         renderLeds()
     })
 
+    launchpad.on('release', button => {
+        if(!button.special) {
+            const state = store.getState()
+            const [offsetX, offsetY] = state.getOffsets()
+            const x = button.x + offsetX
+            const y = button.y + offsetY
+            store.dispatch({type:'set-button-timer', value: [x, y, null]})
+        }
+    })
+
     if (options.tempo !== 'ext') {
         stepSequencer.play()
-    }
-
-    if (options.tempo === 'ext') {
+    } else {
         const midiInput = new midi.input()
         //don't ignore midi clock messages
         midiInput.ignoreTypes(true, false, true)

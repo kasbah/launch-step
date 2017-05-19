@@ -15,6 +15,7 @@ module.exports = function (options) {
             playing       : noteRows.map(() => false),
             velocityBrush : 127,
             stepGrid      : stepGrid,
+            buttonTimerGrid    : emptyStepGrid(stepsInGrid, noteRows.length, null),
             step          : 0,
             numberOfSteps : options.numberOfSteps,
             stepsInGrid   : stepsInGrid,
@@ -37,7 +38,20 @@ module.exports = function (options) {
         switch(action.type) {
             case 'reset':
                 return initState()
-            case 'toggle-button':
+            case 'set-velocity': {
+                const x = action.value[0]
+                const y = action.value[1]
+                state.stepGrid[x][y] = action.value[2]
+                return state
+            }
+            case 'set-button-timer': {
+                const x = action.value[0]
+                const y = action.value[1]
+                clearInterval(state.buttonTimerGrid[x][y])
+                state.buttonTimerGrid[x][y] = action.value[2]
+                return state
+            }
+            case 'toggle-button': {
                 const x = action.value[0]
                 const y = action.value[1]
                 if (state.stepGrid[x][y] == state.velocityBrush) {
@@ -46,6 +60,7 @@ module.exports = function (options) {
                     state.stepGrid[x][y] = state.velocityBrush
                 }
                 return state
+            }
             case 'set-playing': {
                 const y = action.value
                 state.playing[y] = true
@@ -56,17 +71,20 @@ module.exports = function (options) {
                 state.playing[y] = false
                 return state
             }
-            case 'set-step':
+            case 'set-step': {
                 if (state.step < state.numberOfSteps) {
                     state.step = action.value
                 }
                 return state
-            case 'set-tempo':
+            }
+            case 'set-tempo': {
                 state.tempo = action.value
                 return state
-            case 'clear-grid':
+            }
+            case 'clear-grid': {
                 state.stepGrid = emptyStepGrid(state.stepsInGrid, state.noteRows.length)
                 return state
+            }
             case 'page-up': {
                 const row = state.row - 8
                 if (state.noteRows[rowToNoteRow(state.noteRows, row)] == null) {
