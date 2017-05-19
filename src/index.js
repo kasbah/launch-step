@@ -28,7 +28,7 @@ connection.on('ready', launchpad => {
         state.playing.forEach((playing, y) => {
             if (playing) {
                 const note = state.noteRows[y]
-                midiOutput.sendMessage(noteOff(note, 0))
+                midiOutput.sendMessage(noteOff(note, 0, options.channel - 1))
                 store.dispatch({type: 'set-off', y})
             }
         })
@@ -97,9 +97,9 @@ connection.on('ready', launchpad => {
         state.stepGrid[state.step].forEach((velocity, y) => {
             if (velocity) {
                 const note = state.noteRows[y]
-                midiOutput.sendMessage(noteOn(note, velocity))
+                midiOutput.sendMessage(noteOn(note, velocity, options.channel - 1))
                 setTimeout(() => {
-                    midiOutput.sendMessage(noteOff(note, velocity))
+                    midiOutput.sendMessage(noteOff(note, velocity, options.channel - 1))
                     store.dispatch({type: 'set-off', value:y})
                 }, state.duration)
                 store.dispatch({type: 'set-playing', value:y})
