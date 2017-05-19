@@ -133,18 +133,23 @@ connection.on('ready', launchpad => {
 
     launchpad.on('press', button => {
         if(!button.special) {
-            const state = store.getState()
+            const state              = store.getState()
             const [offsetX, offsetY] = state.getOffsets()
-            const x = button.x + offsetX
-            const y = button.y + offsetY
-            const velocity = state.stepGrid[x][y]
+            const x                  = button.x + offsetX
+            const y                  = button.y + offsetY
+            const velocity           = state.stepGrid[x][y]
             if (velocity === 0) {
                 store.dispatch({type:'set-velocity', value: [x,y, 127]})
+                let initialTime = 200
                 const t = setInterval(a => {
-                    const state = store.getState()
-                    const velocity = state.stepGrid[x][y]
-                    if (velocity > 17) {
-                        store.dispatch({type:'set-velocity', value: [x,y, velocity - 10]})
+                    if (initialTime > 0) {
+                        initialTime -= 100
+                    } else {
+                        const state    = store.getState()
+                        const velocity = state.stepGrid[x][y]
+                        if (velocity > 17) {
+                            store.dispatch({type:'set-velocity', value: [x, y, velocity - 10]})
+                        }
                     }
                 }, 100)
                 store.dispatch({type:'set-button-timer', value: [x,y, t]})
@@ -180,10 +185,10 @@ connection.on('ready', launchpad => {
 
     launchpad.on('release', button => {
         if(!button.special) {
-            const state = store.getState()
+            const state              = store.getState()
             const [offsetX, offsetY] = state.getOffsets()
-            const x = button.x + offsetX
-            const y = button.y + offsetY
+            const x                  = button.x + offsetX
+            const y                  = button.y + offsetY
             store.dispatch({type:'set-button-timer', value: [x, y, null]})
         }
     })
