@@ -3,7 +3,6 @@
 require("babel-polyfill")
 const midi          = require('midi')
 const midiLaunchpad = require('midi-launchpad')
-const StepSequencer = require('step-sequencer')
 const tonalRange    = require('tonal-range')
 const {noteOn, noteOff} = require('midi-help')
 
@@ -19,18 +18,11 @@ store.dispatch({type:'reset'})
 const midiOutput = new midi.output()
 midiOutput.openVirtualPort('launch-step output')
 
-if (options.tempo !== 'ext') {
-    var stepSequencer = new StepSequencer(options.tempo * options.stepsPerBeat, options.numberOfSteps)
-}
-
 //undefined = auto-connect, false = disable animation
 const connection = midiLaunchpad.connect(undefined, false)
 
 connection.on('ready', launchpad => {
     process.on('SIGINT', () => {
-        if (options.tempo !== 'ext') {
-            stepSequencer.stop()
-        }
         const state = store.getState()
         //turn off any playing notes
         state.playing.forEach((playing, y) => {
@@ -108,29 +100,6 @@ connection.on('ready', launchpad => {
         })
     }
 
-    function renderSequencer() {
-        if (options.tempo !== 'ext') {
-            stepSequencer.removeAllListeners()
-            const state = store.getState()
-            stepSequencer.setTempo(state.tempo * options.stepsPerBeat)
-            stepSequencer.setSequence(state.numberOfSteps, [])
-            registerSequence(state.numberOfSteps)
-        }
-    }
-
-    function registerSequence(numberOfSteps) {
-        if (options.tempo !== 'ext') {
-            for (let step = 0; step < numberOfSteps; step++) {
-                stepSequencer.on(step, () => {
-                    store.dispatch({type: 'set-step', value: step})
-                    renderMidi()
-                    renderLeds()
-                })
-            }
-        }
-    }
-    registerSequence(options.numberOfSteps)
-
     launchpad.on('press', button => {
         if(!button.special) {
             const state              = store.getState()
@@ -159,10 +128,10 @@ connection.on('ready', launchpad => {
         } else {
             switch(button.special[0]) {
                 case 'user 1':
+                    store.dispatch({type:'set-step', value: 0})
                     break
                 case 'session':
                     store.dispatch({type:'reset'})
-                    renderSequencer()
                     break
                 case 'down':
                     store.dispatch({type:'page-down'})
@@ -172,11 +141,9 @@ connection.on('ready', launchpad => {
                     break
                 case 'left':
                     store.dispatch({type:'decrement-steps', value: 1})
-                    renderSequencer()
                     break
                 case 'right':
                     store.dispatch({type:'increment-steps', value: 1})
-                    renderSequencer()
                     break
             }
         }
@@ -193,30 +160,31 @@ connection.on('ready', launchpad => {
         }
     })
 
+    let count = 0
+    function beat() {
+        count += 1
+        //beat clock is 24 per quarter i.e. per beat
+        if (count >= (24 / options.stepsPerBeat)) {
+            count = 0
+            const state = store.getState()
+            let step = state.step + 1
+            if (step >= state.numberOfSteps) {
+                step -= state.numberOfSteps
+            }
+            store.dispatch({type: 'set-step', value: step})
+            renderMidi()
+            renderLeds()
+        }
+    }
+
     if (options.tempo !== 'ext') {
-        stepSequencer.play()
+        setInterval(beat, 1000 / (options.tempo / 60) / 24)
     } else {
         const midiInput = new midi.input()
         //don't ignore midi clock messages
         midiInput.ignoreTypes(true, false, true)
         midiInput.openVirtualPort('launch-step clock input')
-        let count = 0
-        let step = 0
-        midiInput.on('message', (deltaTime, message) => {
-            count += 1
-            //beat clock is 24 per quarter i.e. per beat
-            if (count >= (24 / options.stepsPerBeat)) {
-                count = 0
-                const state = store.getState()
-                step += 1;
-                if (step >= state.numberOfSteps) {
-                    step -= state.numberOfSteps
-                }
-                store.dispatch({type: 'set-step', value: step})
-                renderMidi()
-                renderLeds()
-            }
-        })
+        midiInput.on('message', beat)
     }
 
 })
