@@ -129,9 +129,15 @@ connection.on('ready', launchpad => {
             switch(button.special[0]) {
                 case 'user 1':
                     store.dispatch({type:'set-step', value: 0})
+                    if (options.tempo !== 'ext') {
+                        setTimer()
+                    }
                     break
                 case 'session':
                     store.dispatch({type:'reset'})
+                    if (options.tempo !== 'ext') {
+                        setTimer()
+                    }
                     break
                 case 'down':
                     store.dispatch({type:'page-down'})
@@ -177,8 +183,16 @@ connection.on('ready', launchpad => {
         }
     }
 
+    let timer
+    function setTimer() {
+        clearInterval(timer)
+        if (options.tempo !== 'ext') {
+            timer = setInterval(beat, 1000 / (options.tempo / 60) / 24)
+        }
+    }
+
     if (options.tempo !== 'ext') {
-        setInterval(beat, 1000 / (options.tempo / 60) / 24)
+        setTimer()
     } else {
         const midiInput = new midi.input()
         //don't ignore midi clock messages
