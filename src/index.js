@@ -15,7 +15,7 @@ const options = require('./options')
 const store = require('./state')(options)
 store.dispatch({type:'reset'})
 
-const midiOutput = new midi.output()
+const midiOutput = new midi.output('launch-step', true);
 midiOutput.openVirtualPort('launch-step output')
 
 //undefined = auto-connect, false = disable animation

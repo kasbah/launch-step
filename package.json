@@ -15,7 +15,7 @@
     "argv-me": "github:kasbah/argv-me#112ea2a06331c059dbd07da7fa27986e45214bfa",
     "babel-polyfill": "^6.13.0",
     "lodash.kebabcase": "^4.1.1",
-    "midi": "^0.9.5",
+    "midi": "https://github.com/jean-emmanuel/node-midi",
     "midi-help": "^0.2.1",
     "midi-launchpad": "kasbah/node-midi-launchpad#92eecf4fce048a58ba9336eadae50261749005cc",
     "redux": "^3.6.0",
