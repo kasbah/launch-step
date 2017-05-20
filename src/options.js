@@ -47,6 +47,13 @@ const args = argv.option([
         description: "The note to start the scale from. Can be a MIDI note number (0-127) or a note name like 'A1', 'Bb1' or 'C#1'. The default is MIDI note 60 (C4).",
         example: "'launch-step -r A4' or 'launch-step --root-note=A4'"
     },
+    {
+        name: 'jack-midi',
+        short: 'j',
+        type: 'boolean',
+        description: "Use Jack MIDI.",
+        example: "'launch-step -j' or 'launch-step --jack-midi'"
+    },
 ]).run()
 
 const options = {
@@ -54,6 +61,7 @@ const options = {
     numberOfSteps : args.options['number-of-steps'] || 8,
     stepsPerBeat  : args.options['steps-per-beat'] || 2,
     channel       : args.options.channel || 1,
+    jack          : args.options['jack-midi'] || false,
 }
 
 if (args.options.scale && args.options.scale.trim().split(' ').length > 1) {
