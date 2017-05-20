@@ -37,8 +37,8 @@ const args = argv.option([
         name: 'scale',
         short: 's',
         type: 'string',
-        description: `The scale to apply to the rows. The default is 'major-pentatonic'. You can specify a scale by name or use MIDI or Options are: \n\n ${scales.supportedScales.join('\n')}`,
-        example: `for example:\nlaunch-step -s major\nlaunch-step --scale=major\nlaunch-step -s "C Eb F F# G Bb"\nlaunch-step -s "49 53 58 61"`
+        description: `The scale to apply to the rows. The default is 'major-pentatonic'. You can specify a scale by name or use a progression of MIDI note numbers or note names seperated by spaces. If you give a specific note like C3 or MIDI note 48 as the first note that note will be used as the root note if no root-note option is given. Supported scale names are : \n\n ${scales.supportedScales.join('\n')}`,
+        example: `for example:\n\tlaunch-step -s major\n\tlaunch-step --scale=major\n\tlaunch-step -s "C3 Eb F F# G Bb"\n\tlaunch-step -s "49 53 58 61"`
     },
     {
         name: 'root-note',
@@ -53,14 +53,11 @@ const options = {
     tempo         : args.options.tempo === 'ext' ? 'ext' : Number(args.options.tempo || 120),
     numberOfSteps : args.options['number-of-steps'] || 8,
     stepsPerBeat  : args.options['steps-per-beat'] || 2,
-    scale         : args.options.scale || 'major-pentatonic',
     channel       : args.options.channel || 1,
-    root          : tonalMidi.toMidi(args.options['root-note'] || 60),
 }
 
-
-if (options.scale.trim().split(' ').length > 1) {
-    const notes = options.scale.trim().split(' ')
+if (args.options.scale && args.options.scale.trim().split(' ').length > 1) {
+    const notes = args.options.scale.trim().split(' ')
     options.scale = notes.map(n => {
         if (isNaN(parseInt(n))) {
             return n
@@ -68,11 +65,24 @@ if (options.scale.trim().split(' ').length > 1) {
             return tonalMidi.fromMidi(n)
         }
     })
+    const root = tonalMidi.toMidi(options.scale[0])
+    if (root) {
+        options.root = root
+    }
 } else  {
+    options.scale = args.options.scale || 'major-pentatonic'
     if (!(scales.supportedScales.includes(options.scale))) {
-        console.error(`No scale named '${options.scale}', run 'launch-step --help'for a list of available scales.`)
+        console.error(`No scale named '${options.scale}', run 'launch-step --help for a list of available scales.`)
         process.exit(1)
     }
+}
+
+if (args.options['root-note']) {
+    options.root = tonalMidi.toMidi(args.options['root-note'])
+}
+
+if (options.root == null) {
+    options.root = 60
 }
 
 if (isNaN(options.root) || options.root == null) {
