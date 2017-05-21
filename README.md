@@ -15,7 +15,38 @@ sudo npm install --global git+https://github.com/kasbah/launch-step
 launch-step -h
 ```
 
+### Mac OS
+
+Launch Step should work on Mac OS but I haven't tried it and don't have any Apple hardware. You will need: 
+
+
+- Some version of Xcode (or Command Line Tools)
+- Python (for node-gyp)
+- Jack and Core-Audio headers 
+- NodeJS 
+
+Then you should be able to install it as on Linux:
+
+```
+sudo npm install --global git+https://github.com/kasbah/launch-step
+launch-step -h
+```
+
+
+### Windows
+
+Launch Step could work on Windows but the problem is it uses a virtual MIDI port as it's output which Windows doesn't support. If you have any suggestions on how to make this work on Windows let me know.
+
 ## Usage
+
+Buttons are currently assigned to the following: 
+
+- Up      - Navigate one screen up towards higher notes
+- Down    - Navigate one screen down (lower notes)
+- Left    - Decrease number of steps by one
+- Right   - Increase number of steps by one
+- Session - Reset the entire session (deleting everything)
+- User1   - Reset the cursor to the start of the sequence (and reset the clock if an internal clock is used)
 
 ```
 Usage: launch-step [options]
@@ -157,13 +188,10 @@ Usage: launch-step [options]
 
     for example:
     
-    launch-step -s major
-    
-    launch-step --scale=major
-    
-    launch-step -s "C3 Eb F F# G Bb"
-    
-    launch-step -s "49 53 58 61"
+      launch-step -s major
+      launch-step --scale=major
+      launch-step -s "C3 Eb F F# G Bb"
+      launch-step -s "49 53 58 61"
 
 
   --root-note, -r
