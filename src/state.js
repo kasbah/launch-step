@@ -41,6 +41,9 @@ module.exports = function (options) {
             case 'set-velocity': {
                 const x = action.value[0]
                 const y = action.value[1]
+                if (state.stepGrid[x] == null) {
+                    state.stepGrid[x] = []
+                }
                 state.stepGrid[x][y] = action.value[2]
                 return state
             }
