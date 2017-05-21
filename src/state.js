@@ -47,6 +47,9 @@ module.exports = function (options) {
             case 'set-button-timer': {
                 const x = action.value[0]
                 const y = action.value[1]
+                if (state.buttonTimerGrid[x] == null) {
+                    state.buttonTimerGrid[x] = []
+                }
                 clearInterval(state.buttonTimerGrid[x][y])
                 state.buttonTimerGrid[x][y] = action.value[2]
                 return state
